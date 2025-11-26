@@ -2,11 +2,7 @@
 
 include('../../db/db_connect.php');
 
-// --- CRUD Operations PHP Logic ---
-
-// Function to fetch all events
 function get_all_events($conn) {
-    // FIX 1: Updated column names in the SELECT query
     $sql = "SELECT 
                 event_id AS id, 
                 title, 
@@ -20,62 +16,107 @@ function get_all_events($conn) {
             ORDER BY event_date DESC"; // Changed ORDER BY to use event_date
     $result = mysqli_query($conn, $sql);
     
-    // --- ADDED CRITICAL CHECK ---
     if ($result === false) {
-        // Output the specific MySQL error for debugging
         die("MySQL Query Error in get_all_events: " . mysqli_error($conn) . 
             "<br>Query: " . htmlspecialchars($sql));
     }
-    // ----------------------------
 
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+
+
 // ------------------------------------
-// A. HANDLE ADDING NEW EVENT
+// A. HANDLE ADDING NEW EVENT & VENUE
 // ------------------------------------
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
-    // FIX 2: Collect all new fields from the POST request
-    $title         = mysqli_real_escape_string($conn, $_POST['title']);
-    $description   = mysqli_real_escape_string($conn, $_POST['description']);
-    $venue_id      = mysqli_real_escape_string($conn, $_POST['venue_id']);
-    $event_date    = mysqli_real_escape_string($conn, $_POST['event_date']);
-    $start_time    = mysqli_real_escape_string($conn, $_POST['start_time']);
-    $end_time      = mysqli_real_escape_string($conn, $_POST['end_time']);
-    $ticket_price  = mysqli_real_escape_string($conn, $_POST['ticket_price']);
-    $category_id     = mysqli_real_escape_string($conn, $_POST['category_id']);
-   
-    // FIX 3: Updated INSERT query with all columns
-    $sql = "INSERT INTO events (
-            title, description, venue_id, event_date, start_time, end_time, ticket_price, category_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
-    if ($stmt = mysqli_prepare($conn, $sql)) {
-        // FIX 4: Updated bind_param types and variables (s=string, i=int, d=double)
-        mysqli_stmt_bind_param($stmt, "ssisssdi", 
-            $title, 
-            $description, 
-            $venue_id, 
-            $event_date, 
-            $start_time, 
-            $end_time, 
-            $ticket_price,
-            $category_id
-        );
-        
-        if (mysqli_stmt_execute($stmt)) {
-            // Redirect to prevent form resubmission
-            header("location: manage_events.php?status=added");
-            exit();
+    // 1. Get Event Data (No change here, but included for context)
+    $title           = mysqli_real_escape_string($conn, $_POST['title']);
+    $description     = mysqli_real_escape_string($conn, $_POST['description']);
+    $event_date      = mysqli_real_escape_string($conn, $_POST['event_date']);
+    $start_time      = mysqli_real_escape_string($conn, $_POST['start_time']);
+    $end_time        = mysqli_real_escape_string($conn, $_POST['end_time']);
+    $ticket_price    = mysqli_real_escape_string($conn, $_POST['ticket_price']);
+    $category_id     = mysqli_real_escape_string($conn, $_POST['category_id']);
+    
+    // 2. Get Venue Data (New or Existing)
+$venue_select_type = isset($_POST['venue_select_type']) ? $_POST['venue_select_type'] : 'existing'; 
+$venue_id_existing = isset($_POST['venue_id_existing']) ? $_POST['venue_id_existing'] : ''; 
+    $final_venue_id = null;
+
+    if ($venue_select_type === 'new') {
+        // --- Process New Venue ---
+        $venue_name = mysqli_real_escape_string($conn, $_POST['venue_name_new']);
+        $address    = mysqli_real_escape_string($conn, $_POST['address_new']);
+        $capacity   = mysqli_real_escape_string($conn, $_POST['capacity_new']);
+
+        if (!empty($venue_name) && !empty($address)) {
+            $sql_venue = "INSERT INTO event_venues (venue_name, address, capacity) VALUES (?, ?, ?)";
+            
+            if ($stmt_venue = mysqli_prepare($conn, $sql_venue)) {
+                $capacity_int = is_numeric($capacity) && $capacity > 0 ? (int)$capacity : null;
+                mysqli_stmt_bind_param($stmt_venue, "ssi", $venue_name, $address, $capacity_int);
+                
+                if (mysqli_stmt_execute($stmt_venue)) {
+                    // Success: Get the ID of the newly inserted venue
+                    $final_venue_id = mysqli_insert_id($conn);
+                } else {
+                    error_log("MySQLi Execute Error (Venue): " . mysqli_stmt_error($stmt_venue));
+                    echo "<script>alert('ERROR: Could not add new venue. Check PHP error log.');</script>";
+                    mysqli_stmt_close($stmt_venue);
+                    exit(); 
+                }
+                mysqli_stmt_close($stmt_venue);
+            } else {
+                error_log("MySQLi Prepare Error (Venue): " . mysqli_error($conn));
+                echo "<script>alert('ERROR: Could not prepare venue query.');</script>";
+                exit();
+            }
         } else {
-            // Added error logging for debugging
-            error_log("MySQLi Execute Error: " . mysqli_stmt_error($stmt));
-            echo "<script>alert('ERROR: Could not execute query. Check PHP error log for details.');</script>";
+             echo "<script>alert('ERROR: New Venue Name and Address are required.');</script>";
+             exit();
         }
-        mysqli_stmt_close($stmt);
+
+    } elseif ($venue_select_type === 'existing' && !empty($venue_id_existing)) {
+        // --- Process Existing Venue ---
+        $final_venue_id = (int)$venue_id_existing;
     } else {
-         error_log("MySQLi Prepare Error: " . mysqli_error($conn));
-         echo "<script>alert('ERROR: Could not prepare query. Check PHP error log for details.');</script>";
+        echo "<script>alert('ERROR: A venue selection is required.');</script>";
+        exit();
+    }
+
+
+    // 3. Insert Event using $final_venue_id
+    if ($final_venue_id !== null) {
+        $sql = "INSERT INTO events (
+                    title, description, venue_id, event_date, start_time, end_time, ticket_price, category_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        if ($stmt = mysqli_prepare($conn, $sql)) {
+            mysqli_stmt_bind_param($stmt, "ssisssdi", 
+                $title, 
+                $description, 
+                $final_venue_id, // Use the dynamically determined ID
+                $event_date, 
+                $start_time, 
+                $end_time, 
+                $ticket_price,
+                $category_id
+            );
+            
+            if (mysqli_stmt_execute($stmt)) {
+                header("location: manage_events.php?status=added");
+                exit();
+            } else {
+                error_log("MySQLi Execute Error (Event): " . mysqli_stmt_error($stmt));
+                echo "<script>alert('ERROR: Could not execute event query. Check PHP error log for details.');</script>";
+            }
+            mysqli_stmt_close($stmt);
+        } else {
+            error_log("MySQLi Prepare Error (Event): " . mysqli_error($conn));
+            echo "<script>alert('ERROR: Could not prepare event query. Check PHP error log for details.');</script>";
+        }
     }
 }
 
@@ -84,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
 // ------------------------------------
 if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
-    // FIX 5: Use 'event_id' column for deletion
+
     $sql = "DELETE FROM events WHERE event_id = ?"; 
     
     if ($stmt = mysqli_prepare($conn, $sql)) {
@@ -103,8 +144,23 @@ if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
 // C. FETCH EVENTS FOR DISPLAY
 // ------------------------------------
 $events = get_all_events($conn);
+$venues = get_all_venues($conn);
 
-
+// Function to fetch all existing venues for the dropdown
+function get_all_venues($conn) {
+    $sql = "SELECT venue_id, venue_name FROM event_venues ORDER BY venue_name ASC";
+    $result = mysqli_query($conn, $sql);
+    
+    // Check for query execution failure
+    if ($result === false) {
+        error_log("MySQL Query Error in get_all_venues: " . mysqli_error($conn));
+        // Use array() syntax for maximum compatibility
+        return array(); 
+    }
+    
+    // If successful but no rows are found, it will return an empty array anyway
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
 // ------------------------------------
 // D. HANDLE ADDING NEW EVENT CATEGORY
 // ------------------------------------
@@ -199,7 +255,7 @@ mysqli_close($conn);
 
     </div>
 
-    <div id="addEventModal" class="modal">
+<div id="addEventModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Add New Event</h2>
@@ -212,11 +268,40 @@ mysqli_close($conn);
                 <textarea id="description" name="description"></textarea>
 
                 <label for="category_id">Category ID</label>
-                <input type="number" id="category_id" name="category_id" required>
+                <input type="number" id="category_id" name="category_id" required> 
+                
+                <h3>Venue Details</h3>
+                
+                <label>
+                    <input type="radio" name="venue_select_type" value="existing" checked onclick="toggleVenueFields('existing')"> Select Existing Venue
+                </label>
+                <label>
+                    <input type="radio" name="venue_select_type" value="new" onclick="toggleVenueFields('new')"> Add New Venue
+                </label>
+                
+                <div id="existingVenueFields">
+                    <label for="venue_id_existing">Select Venue</label>
+                    <select id="venue_id_existing" name="venue_id_existing" required>
+                        <option value="">-- Select a Venue --</option>
+                        <?php foreach ($venues as $venue): ?>
+                            <option value="<?php echo htmlspecialchars($venue['venue_id']); ?>">
+                                <?php echo htmlspecialchars($venue['venue_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-                <label for="venue_id">Venue ID</label>
-                <input type="number" id="venue_id" name="venue_id" required>
+                <div id="newVenueFields" style="display:none;">
+                    <label for="venue_name_new">New Venue Name</label>
+                    <input type="text" id="venue_name_new" name="venue_name_new">
+                    
+                    <label for="address_new">Address</label>
+                    <input type="text" id="address_new" name="address_new">
 
+                    <label for="capacity_new">Capacity</label>
+                    <input type="number" id="capacity_new" name="capacity_new" min="1">
+                </div>
+                
                 <label for="event_date">Date</label>
                 <input type="date" id="event_date" name="event_date" required>
                 
@@ -226,7 +311,7 @@ mysqli_close($conn);
                 <label for="end_time">End Time</label>
                 <input type="time" id="end_time" name="end_time">
 
-              <label for="ticket_price">Ticket Price</label>
+                <label for="ticket_price">Ticket Price</label>
                 <input type="number" step="0.01" id="ticket_price" name="ticket_price" required>
                 
                 <button type="submit" name="add_event">Save Event</button>
