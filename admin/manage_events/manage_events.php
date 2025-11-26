@@ -150,15 +150,7 @@ mysqli_close($conn);
     <title>Event Management</title>
     <link rel="stylesheet" href="css/manage_events.css">
     <link rel="stylesheet" href="../includes/navbar.css">
-    <style>
-        /* Simple style for modal (if not defined in manage_events.css) */
-        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
-        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
-        /* Responsive table */
-        .event-table th, .event-table td { font-size: 0.8em; } 
-    </style>
+
 </head>
 <body>
     <?php include('../includes/navbar.php'); ?>
