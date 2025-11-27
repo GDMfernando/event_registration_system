@@ -6,7 +6,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <div class="logo">EventReg.</div>
     <ul class="nav-links">
         
-        <li><a href="dashboard.php" <?php if($current_page == 'dashboard.php') echo 'class="active"'; ?>>Home</a></li>
+        <li><a href="../dashboard/dashboard.php" <?php if($current_page == 'dashboard.php') echo 'class="active"'; ?>>Home</a></li>
         
         <li><a 
             href="../manage_events/manage_events.php" 
