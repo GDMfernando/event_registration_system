@@ -1,14 +1,15 @@
 <?php
-// PHP logic (Hardcoded Statistics - Replace with database queries later)
-
 
 include('../../db/db_connect.php');
-// You would typically include database connection and session checks here.
+
 function get_all_categories($conn)
 {
     $sql = "SELECT category_id, category_name FROM event_categories ORDER BY category_name ASC";
     $result = mysqli_query($conn, $sql);
-    if ($result === false) { error_log("Error: " . mysqli_error($conn)); return []; }
+    if ($result === false) {
+        error_log("Error: " . mysqli_error($conn));
+        return [];
+    }
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
@@ -16,33 +17,42 @@ function get_all_venues($conn)
 {
     $sql = "SELECT venue_id, venue_name FROM event_venues ORDER BY venue_name ASC";
     $result = mysqli_query($conn, $sql);
-    if ($result === false) { error_log("Error: " . mysqli_error($conn)); return []; }
+    if ($result === false) {
+        error_log("Error: " . mysqli_error($conn));
+        return [];
+    }
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
 function get_total_event_count($conn)
 {
-    $sql = "SELECT COUNT(event_id) AS total_events FROM events"; 
+    $sql = "SELECT COUNT(event_id) AS total_events FROM events";
     $result = mysqli_query($conn, $sql);
-    if ($result === false) { error_log("Error in get_total_event_count: " . mysqli_error($conn)); return 0; }
+    if ($result === false) {
+        error_log("Error in get_total_event_count: " . mysqli_error($conn));
+        return 0;
+    }
     $row = mysqli_fetch_assoc($result);
     return (int)$row['total_events'];
 }
 
 function get_active_event_count($conn)
 {
-    // Counts events where the event date is today or in the future AND the status is 'Active'
+
     $sql = "SELECT COUNT(event_id) AS active_events 
             FROM events 
-            WHERE event_date >= CURDATE() AND status = 'Active'"; 
+            WHERE event_date >= CURDATE() AND status = 'Active'";
     $result = mysqli_query($conn, $sql);
-    if ($result === false) { error_log("Error in get_active_event_count: " . mysqli_error($conn)); return 0; }
+    if ($result === false) {
+        error_log("Error in get_active_event_count: " . mysqli_error($conn));
+        return 0;
+    }
     $row = mysqli_fetch_assoc($result);
     return (int)$row['active_events'];
 }
 
 
-$total_events = get_total_event_count($conn); 
+$total_events = get_total_event_count($conn);
 $active_events = get_active_event_count($conn);
 $total_users = 1500;
 $total_bookings = 3200;

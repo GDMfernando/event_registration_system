@@ -31,11 +31,6 @@ function get_all_events($conn)
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-
-
-// ------------------------------------
-// A. HANDLE ADDING NEW EVENT & VENUE
-// ------------------------------------
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
 
     // 1. Get Event Data (No change here, but included for context)
@@ -130,9 +125,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
     }
 }
 
-// ------------------------------------
-// B. HANDLE DELETING EVENT
-// ------------------------------------
+if (isset($_GET['action']) && $_GET['action'] === 'fetch_event' && isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $event_id = (int)$_GET['id'];
+    $event = get_event_by_id($conn, $event_id);
+
+    // Set header to JSON content type
+    header('Content-Type: application/json');
+
+    if ($event) {
+        // Successfully fetched data
+        echo json_encode(['success' => true, 'event' => $event]);
+    } else {
+        // Failed to fetch data
+        echo json_encode(['success' => false, 'message' => 'Event not found or database error.']);
+    }
+    // STOP execution for the AJAX request
+    exit(); 
+}
+
 if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
 
@@ -147,6 +157,98 @@ if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
             echo "<script>alert('ERROR: Could not execute delete query.');</script>";
         }
         mysqli_stmt_close($stmt);
+    }
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
+    // 1. Get Event Data
+    $event_id        = mysqli_real_escape_string($conn, $_POST['event_id']);
+    $title           = mysqli_real_escape_string($conn, $_POST['title']);
+    $description     = mysqli_real_escape_string($conn, $_POST['description']);
+    $category_id     = mysqli_real_escape_string($conn, $_POST['category_id']);
+    $venue_id        = mysqli_real_escape_string($conn, $_POST['venue_id']); // Use name 'venue_id' from the edit modal
+    $event_date      = mysqli_real_escape_string($conn, $_POST['event_date']);
+    $start_time      = mysqli_real_escape_string($conn, $_POST['start_time']);
+    $end_time        = mysqli_real_escape_string($conn, $_POST['end_time']);
+    $ticket_price    = mysqli_real_escape_string($conn, $_POST['ticket_price']);
+    $status          = mysqli_real_escape_string($conn, $_POST['status']);
+
+
+    // 2. Prepare Update Query
+    $sql = "UPDATE events SET
+                title = ?, 
+                description = ?, 
+                category_id = ?, 
+                venue_id = ?, 
+                event_date = ?, 
+                start_time = ?, 
+                end_time = ?, 
+                ticket_price = ?,
+                status = ?
+            WHERE event_id = ?";
+
+    if ($stmt = mysqli_prepare($conn, $sql)) {
+        mysqli_stmt_bind_param(
+            $stmt,
+            "ssiisssdsi",
+            $title,
+            $description,
+            $category_id,
+            $venue_id,
+            $event_date,
+            $start_time,
+            $end_time,
+            $ticket_price,
+            $status,
+            $event_id // The WHERE clause parameter
+        );
+
+        if (mysqli_stmt_execute($stmt)) {
+            header("location: manage_events.php?status=updated");
+            exit();
+        } else {
+            error_log("MySQLi Execute Error (Update Event): " . mysqli_stmt_error($stmt));
+            echo "<script>alert('ERROR: Could not update event. Check PHP error log for details.');</script>";
+        }
+        mysqli_stmt_close($stmt);
+    } else {
+        error_log("MySQLi Prepare Error (Update Event): " . mysqli_error($conn));
+        echo "<script>alert('ERROR: Could not prepare update query. Check PHP error log for details.');</script>";
+    }
+}
+
+function get_event_by_id($conn, $id)
+{
+
+    $sql = "SELECT 
+                e.event_id AS id, 
+                e.title, 
+                e.description, 
+                e.event_date, 
+                e.start_time, 
+                e.end_time,
+                e.category_id,
+                e.venue_id,      
+                e.ticket_price,
+                e.available_seats,     
+                e.status, 
+                v.venue_name, 
+                c.category_name 
+            FROM events e
+            JOIN event_venues v ON e.venue_id = v.venue_id 
+            JOIN event_categories c ON e.category_id = c.category_id
+            WHERE e.event_id = ?";
+
+    if ($stmt = mysqli_prepare($conn, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $event = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+        return $event;
+    } else {
+        error_log("MySQLi Prepare Error (get_event_by_id): " . mysqli_error($conn));
+        return null;
     }
 }
 
@@ -178,22 +280,18 @@ function get_all_venues($conn)
     // Check for query execution failure
     if ($result === false) {
         error_log("MySQL Query Error in get_all_venues: " . mysqli_error($conn));
-        // Use array() syntax for maximum compatibility
         return array();
     }
 
-    // If successful but no rows are found, it will return an empty array anyway
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 // ------------------------------------
 // D. HANDLE ADDING NEW EVENT CATEGORY
 // ------------------------------------
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_category'])) {
-    // Check if category_name is present and sanitize it
     if (isset($_POST['category_name']) && !empty($_POST['category_name'])) {
         $category_name = mysqli_real_escape_string($conn, $_POST['category_name']);
 
-        // Prepare the INSERT statement
         $sql = "INSERT INTO event_categories (category_name) VALUES (?)";
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
@@ -274,7 +372,7 @@ mysqli_close($conn);
                             <td><?php echo htmlspecialchars($event['status']); ?></td>
                             <td><?php echo htmlspecialchars($event['created_at']); ?></td>
                             <td class="action-links">
-                                <a href="edit_event.php?id=<?php echo $event['id']; ?>" class="edit">Edit</a>
+                                <a href="javascript:void(0);" data-id="<?php echo $event['id']; ?>" class="edit">Edit</a>
                                 <a href="manage_events.php?delete_id=<?php echo $event['id']; ?>" class="delete" onclick="return confirm('Are you sure you want to delete this event?');">Delete</a>
                             </td>
                         </tr>
@@ -289,8 +387,9 @@ mysqli_close($conn);
 
     </div>
 
-    <?php include('add_event_modal.php'); ?>
-    
+    <?php include 'add_event_modal.php'; ?>
+    <?php include 'edit_event_modal.php'; ?>
+
     <div id="addCategoryModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>

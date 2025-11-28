@@ -1,80 +1,156 @@
 function toggleVenueFields(type) {
-    const existingFields = document.getElementById('existingVenueFields');
-    const newFields = document.getElementById('newVenueFields');
-    const existingSelect = document.getElementById('venue_id_existing');
-    const newNameInput = document.getElementById('venue_name_new');
-    const newAddressInput = document.getElementById('address_new');
+  const existingFields = document.getElementById("existingVenueFields");
+  const newFields = document.getElementById("newVenueFields");
+  const existingSelect = document.getElementById("venue_id_existing");
+  const newNameInput = document.getElementById("venue_name_new");
+  const newAddressInput = document.getElementById("address_new");
 
-    if (type === 'existing') {
-        existingFields.style.display = 'block';
-        newFields.style.display = 'none';
-        
-        // Make existing venue select required, remove required from new venue fields
-        existingSelect.setAttribute('required', 'required');
-        newNameInput.removeAttribute('required');
-        newAddressInput.removeAttribute('required');
-    } else if (type === 'new') {
-        existingFields.style.display = 'none';
-        newFields.style.display = 'block';
-
-        // Make new venue name and address required, remove required from existing select
-        existingSelect.removeAttribute('required');
-        newNameInput.setAttribute('required', 'required');
-        newAddressInput.setAttribute('required', 'required');
-    }
+  if (type === "existing") {
+    existingFields.style.display = "block";
+    newFields.style.display = "none";
+    existingSelect.setAttribute("required", "required");
+    newNameInput.removeAttribute("required");
+    newAddressInput.removeAttribute("required");
+  } else if (type === "new") {
+    existingFields.style.display = "none";
+    newFields.style.display = "block";
+    existingSelect.removeAttribute("required");
+    newNameInput.setAttribute("required", "required");
+    newAddressInput.setAttribute("required", "required");
+  }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function fetchEventDetails(eventId, modal) {
 
-    var eventModal = document.getElementById("addEventModal");
-    var eventBtn = document.getElementById("addNewEventBtn") || document.getElementById("dashboardAddEventBtn");
-    
-    var eventClose = eventModal ? eventModal.querySelector(".close") : null;
+    fetch(`manage_events.php?action=fetch_event&id=${eventId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const event = data.event;
 
-    // Category Modal Elements
-    var categoryModal = document.getElementById("addCategoryModal");
-    var categoryBtn = document.getElementById("addNewCategoryBtn");
-    
-    var categoryClose = categoryModal ? categoryModal.querySelector(".close") : null;
-    // ----------------------------------------------------
-    // Event Modal Handlers
-    if (eventBtn) {
-        eventBtn.onclick = function() {
-            eventModal.style.display = "block";
-        }
+                // Set ALL fields directly from the database response
+                document.getElementById('edit_event_id').value = event.id; 
+                document.getElementById('edit_title').value = event.title;
+                document.getElementById('edit_description').value = event.description;
+                document.getElementById('edit_category_id').value = event.category_id;
+                document.getElementById('edit_venue_id').value = event.venue_id;
+                document.getElementById('edit_event_date').value = event.event_date;
+                document.getElementById('edit_start_time').value = event.start_time ? event.start_time.substring(0, 5) : ''; 
+                document.getElementById('edit_end_time').value = event.end_time ? event.end_time.substring(0, 5) : '';
+                document.getElementById('edit_ticket_price').value = event.ticket_price;
+                document.getElementById('edit_status').value = event.status;
+              
+                // Display the modal
+                modal.style.display = "block";
+
+            } else {
+                alert('Could not fetch event details: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            alert('An error occurred while fetching event data.');
+        });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  var eventModal = document.getElementById("addEventModal");
+  var eventBtn =
+    document.getElementById("addNewEventBtn") ||
+    document.getElementById("dashboardAddEventBtn");
+  var eventClose = eventModal ? eventModal.querySelector(".close") : null;
+
+  // Category Modal Elements
+  var categoryModal = document.getElementById("addCategoryModal");
+  var categoryBtn = document.getElementById("addNewCategoryBtn");
+  var categoryClose = categoryModal
+    ? categoryModal.querySelector(".close")
+    : null;
+
+  var editModal = document.getElementById("editEventModal");
+  var editClose = editModal ? editModal.querySelector(".edit-close") : null;
+  var editLinks = document.querySelectorAll(".action-links .edit");
+
+  // Event Modal Handlers
+  if (eventBtn) {
+    eventBtn.onclick = function () {
+      eventModal.style.display = "block";
+    };
+  }
+
+  if (eventClose) {
+    eventClose.onclick = function () {
+      eventModal.style.display = "none";
+    };
+  }
+
+  if (categoryBtn) {
+    categoryBtn.onclick = function () {
+      categoryModal.style.display = "block";
+    };
+  }
+
+  if (categoryClose) {
+    categoryClose.onclick = function () {
+      categoryModal.style.display = "none";
+    };
+  }
+
+  if (editClose) {
+    editClose.onclick = function () {
+      editModal.style.display = "none";
+    };
+  }
+
+  editLinks.forEach((link) => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      const eventId = this.getAttribute("data-id");
+
+      if (eventId) {
+
+        const row = this.closest("tr");
+        const title = row.children[1].textContent;
+        const categoryName = row.children[2].textContent;
+        const date = row.children[3].textContent;
+        const price = row.children[6].textContent;
+        const status = row.children[8].textContent;
+
+
+        document.getElementById("edit_event_id").value = eventId;
+        document.getElementById("edit_title").value = title;
+        document.getElementById("edit_event_date").value = date;
+        document.getElementById("edit_ticket_price").value = price;
+        document.getElementById("edit_status").value = status;
+
+
+        const editCategorySelect = document.getElementById("edit_category_id");
+        Array.from(editCategorySelect.options).forEach((option) => {
+          if (option.textContent.trim() === categoryName.trim()) {
+            option.selected = true;
+          }
+        });
+
+        fetchEventDetails(eventId, editModal);
+      }
+    });
+  });
+
+  window.onclick = function (event) {
+    if (event.target == eventModal) {
+      eventModal.style.display = "none";
+    }
+    if (categoryModal && event.target == categoryModal) {
+      categoryModal.style.display = "none";
     }
 
-    if (eventClose) {
-        eventClose.onclick = function() {
-            eventModal.style.display = "none";
-        }
+    if (editModal && event.target == editModal) {
+      editModal.style.display = "none";
     }
+  };
 
-
-    if (categoryBtn) {
-        categoryBtn.onclick = function() {
-            categoryModal.style.display = "block";
-        }
-    }
-
-    if (categoryClose) {
-        categoryClose.onclick = function() {
-            categoryModal.style.display = "none";
-        }
-    }
-    // ----------------------------------------------------
-
-    // Close Modals on outside click
-    window.onclick = function(event) {
-        if (event.target == eventModal) {
-            eventModal.style.display = "none";
-        }
-        if (categoryModal && event.target == categoryModal) { 
-            categoryModal.style.display = "none";
-        }
-    }
-
-    if (document.getElementById('existingVenueFields')) {
-        toggleVenueFields('existing');
-    }
+  if (document.getElementById("existingVenueFields")) {
+    toggleVenueFields("existing");
+  }
 });
