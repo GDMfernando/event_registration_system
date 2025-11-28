@@ -2,22 +2,29 @@
 
 include('../../db/db_connect.php');
 
-function get_all_events($conn) {
+function get_all_events($conn)
+{
     $sql = "SELECT 
-                event_id AS id, 
-                title, 
-                event_date, 
-                start_time, 
-                end_time,
-                venue_id,
-                ticket_price, 
-                category_id
-            FROM events 
-            ORDER BY event_date DESC"; // Changed ORDER BY to use event_date
+                e.event_id AS id, 
+                e.title, 
+                e.event_date, 
+                e.start_time, 
+                e.end_time,
+                e.category_id,
+                e.ticket_price,
+                v.venue_name, 
+                c.category_name,
+                e.available_seats,     -- ADDED: Available Seats
+                e.status,              -- ADDED: Status
+                e.created_at
+            FROM events e
+            JOIN event_venues v ON e.venue_id = v.venue_id -- JOIN THE TABLES
+            JOIN event_categories c ON e.category_id = c.category_id
+            ORDER BY e.event_date DESC";
     $result = mysqli_query($conn, $sql);
-    
+
     if ($result === false) {
-        die("MySQL Query Error in get_all_events: " . mysqli_error($conn) . 
+        die("MySQL Query Error in get_all_events: " . mysqli_error($conn) .
             "<br>Query: " . htmlspecialchars($sql));
     }
 
@@ -30,19 +37,20 @@ function get_all_events($conn) {
 // A. HANDLE ADDING NEW EVENT & VENUE
 // ------------------------------------
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
-    
+
     // 1. Get Event Data (No change here, but included for context)
     $title           = mysqli_real_escape_string($conn, $_POST['title']);
     $description     = mysqli_real_escape_string($conn, $_POST['description']);
+    $category_id     = mysqli_real_escape_string($conn, $_POST['category_id']);
     $event_date      = mysqli_real_escape_string($conn, $_POST['event_date']);
     $start_time      = mysqli_real_escape_string($conn, $_POST['start_time']);
     $end_time        = mysqli_real_escape_string($conn, $_POST['end_time']);
     $ticket_price    = mysqli_real_escape_string($conn, $_POST['ticket_price']);
-    $category_id     = mysqli_real_escape_string($conn, $_POST['category_id']);
-    
+
+
     // 2. Get Venue Data (New or Existing)
-$venue_select_type = isset($_POST['venue_select_type']) ? $_POST['venue_select_type'] : 'existing'; 
-$venue_id_existing = isset($_POST['venue_id_existing']) ? $_POST['venue_id_existing'] : ''; 
+    $venue_select_type = isset($_POST['venue_select_type']) ? $_POST['venue_select_type'] : 'existing';
+    $venue_id_existing = isset($_POST['venue_id_existing']) ? $_POST['venue_id_existing'] : '';
     $final_venue_id = null;
 
     if ($venue_select_type === 'new') {
@@ -53,11 +61,11 @@ $venue_id_existing = isset($_POST['venue_id_existing']) ? $_POST['venue_id_exist
 
         if (!empty($venue_name) && !empty($address)) {
             $sql_venue = "INSERT INTO event_venues (venue_name, address, capacity) VALUES (?, ?, ?)";
-            
+
             if ($stmt_venue = mysqli_prepare($conn, $sql_venue)) {
                 $capacity_int = is_numeric($capacity) && $capacity > 0 ? (int)$capacity : null;
                 mysqli_stmt_bind_param($stmt_venue, "ssi", $venue_name, $address, $capacity_int);
-                
+
                 if (mysqli_stmt_execute($stmt_venue)) {
                     // Success: Get the ID of the newly inserted venue
                     $final_venue_id = mysqli_insert_id($conn);
@@ -65,7 +73,7 @@ $venue_id_existing = isset($_POST['venue_id_existing']) ? $_POST['venue_id_exist
                     error_log("MySQLi Execute Error (Venue): " . mysqli_stmt_error($stmt_venue));
                     echo "<script>alert('ERROR: Could not add new venue. Check PHP error log.');</script>";
                     mysqli_stmt_close($stmt_venue);
-                    exit(); 
+                    exit();
                 }
                 mysqli_stmt_close($stmt_venue);
             } else {
@@ -74,10 +82,9 @@ $venue_id_existing = isset($_POST['venue_id_existing']) ? $_POST['venue_id_exist
                 exit();
             }
         } else {
-             echo "<script>alert('ERROR: New Venue Name and Address are required.');</script>";
-             exit();
+            echo "<script>alert('ERROR: New Venue Name and Address are required.');</script>";
+            exit();
         }
-
     } elseif ($venue_select_type === 'existing' && !empty($venue_id_existing)) {
         // --- Process Existing Venue ---
         $final_venue_id = (int)$venue_id_existing;
@@ -90,21 +97,24 @@ $venue_id_existing = isset($_POST['venue_id_existing']) ? $_POST['venue_id_exist
     // 3. Insert Event using $final_venue_id
     if ($final_venue_id !== null) {
         $sql = "INSERT INTO events (
-                    title, description, venue_id, event_date, start_time, end_time, ticket_price, category_id
+                    title, description, category_id, venue_id, event_date, start_time, end_time, ticket_price
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        
+
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            mysqli_stmt_bind_param($stmt, "ssisssdi", 
-                $title, 
-                $description, 
+            mysqli_stmt_bind_param(
+                $stmt,
+                "ssiisssd",
+                $title,
+                $description,
+                $category_id,
                 $final_venue_id, // Use the dynamically determined ID
-                $event_date, 
-                $start_time, 
-                $end_time, 
-                $ticket_price,
-                $category_id
+                $event_date,
+                $start_time,
+                $end_time,
+                $ticket_price
+
             );
-            
+
             if (mysqli_stmt_execute($stmt)) {
                 header("location: manage_events.php?status=added");
                 exit();
@@ -126,8 +136,8 @@ $venue_id_existing = isset($_POST['venue_id_existing']) ? $_POST['venue_id_exist
 if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
 
-    $sql = "DELETE FROM events WHERE event_id = ?"; 
-    
+    $sql = "DELETE FROM events WHERE event_id = ?";
+
     if ($stmt = mysqli_prepare($conn, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $id);
         if (mysqli_stmt_execute($stmt)) {
@@ -140,24 +150,38 @@ if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
     }
 }
 
+function get_all_categories($conn)
+{
+    $sql = "SELECT category_id, category_name FROM event_categories ORDER BY category_name ASC";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result === false) {
+        error_log("MySQL Query Error in get_all_categories: " . mysqli_error($conn));
+        return array();
+    }
+
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
 // ------------------------------------
 // C. FETCH EVENTS FOR DISPLAY
 // ------------------------------------
 $events = get_all_events($conn);
 $venues = get_all_venues($conn);
+$categories = get_all_categories($conn);
 
 // Function to fetch all existing venues for the dropdown
-function get_all_venues($conn) {
+function get_all_venues($conn)
+{
     $sql = "SELECT venue_id, venue_name FROM event_venues ORDER BY venue_name ASC";
     $result = mysqli_query($conn, $sql);
-    
+
     // Check for query execution failure
     if ($result === false) {
         error_log("MySQL Query Error in get_all_venues: " . mysqli_error($conn));
         // Use array() syntax for maximum compatibility
-        return array(); 
+        return array();
     }
-    
+
     // If successful but no rows are found, it will return an empty array anyway
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
@@ -168,14 +192,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_category'])) {
     // Check if category_name is present and sanitize it
     if (isset($_POST['category_name']) && !empty($_POST['category_name'])) {
         $category_name = mysqli_real_escape_string($conn, $_POST['category_name']);
-        
+
         // Prepare the INSERT statement
         $sql = "INSERT INTO event_categories (category_name) VALUES (?)";
-        
+
         if ($stmt = mysqli_prepare($conn, $sql)) {
             // Bind the category name parameter (s = string)
             mysqli_stmt_bind_param($stmt, "s", $category_name);
-            
+
             if (mysqli_stmt_execute($stmt)) {
                 // Success: Redirect to prevent form resubmission
                 header("location: manage_events.php?status=category_added");;
@@ -191,15 +215,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_category'])) {
             echo "<script>alert('ERROR: Could not prepare category query.');</script>";
         }
     } else {
-         echo "<script>alert('ERROR: Category name cannot be empty.');</script>";
+        echo "<script>alert('ERROR: Category name cannot be empty.');</script>";
     }
 }
 
-mysqli_close($conn); 
+mysqli_close($conn);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -208,24 +233,29 @@ mysqli_close($conn);
     <link rel="stylesheet" href="../includes/navbar.css">
 
 </head>
+
 <body>
     <?php include('../includes/navbar.php'); ?>
     <div class="container">
         <h1>🗓️ Event Management</h1>
-        
+
         <button id="addNewEventBtn" class="add-event-btn">+ Add New Event</button>
-<button id="addNewCategoryBtn" class="add-event-btn" >+ Add New Category</button>
+        <button id="addNewCategoryBtn" class="add-event-btn">+ Add New Category</button>
         <h2>Existing Events</h2>
-        
+
         <table class="event-table">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Title</th>
+                    <th>Category</th>
                     <th>Date</th>
                     <th>Time</th>
-                    <th>Venue ID</th>
+                    <th>Venue</th>
                     <th>Price</th>
+                    <th>Seats Left</th>
+                    <th>Status</th>
+                    <th>Created At</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -235,10 +265,14 @@ mysqli_close($conn);
                         <tr>
                             <td><?php echo htmlspecialchars($event['id']); ?></td>
                             <td><?php echo htmlspecialchars($event['title']); ?></td>
+                            <td><?php echo htmlspecialchars($event['category_name']); ?></td>
                             <td><?php echo htmlspecialchars($event['event_date']); ?></td>
                             <td><?php echo htmlspecialchars($event['start_time']) . ' - ' . htmlspecialchars($event['end_time']); ?></td>
-                            <td><?php echo htmlspecialchars($event['venue_id']); ?></td>
+                            <td><?php echo htmlspecialchars($event['venue_name']); ?></td>
                             <td><?php echo htmlspecialchars($event['ticket_price']); ?></td>
+                            <td><?php echo htmlspecialchars($event['available_seats']); ?></td>
+                            <td><?php echo htmlspecialchars($event['status']); ?></td>
+                            <td><?php echo htmlspecialchars($event['created_at']); ?></td>
                             <td class="action-links">
                                 <a href="edit_event.php?id=<?php echo $event['id']; ?>" class="edit">Edit</a>
                                 <a href="manage_events.php?delete_id=<?php echo $event['id']; ?>" class="delete" onclick="return confirm('Are you sure you want to delete this event?');">Delete</a>
@@ -255,30 +289,37 @@ mysqli_close($conn);
 
     </div>
 
-<div id="addEventModal" class="modal">
+    <div id="addEventModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Add New Event</h2>
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-                
+
                 <label for="title">Event Title</label>
                 <input type="text" id="title" name="title" required>
 
                 <label for="description">Description</label>
                 <textarea id="description" name="description"></textarea>
 
-                <label for="category_id">Category ID</label>
-                <input type="number" id="category_id" name="category_id" required> 
-                
+                <label for="category_id">Select Category</label>
+                <select id="category_id" name="category_id" required>
+                    <option value="">-- Select a Category --</option>
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?php echo htmlspecialchars($category['category_id']); ?>">
+                            <?php echo htmlspecialchars($category['category_name']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
                 <h3>Venue Details</h3>
-                
+
                 <label>
                     <input type="radio" name="venue_select_type" value="existing" checked onclick="toggleVenueFields('existing')"> Select Existing Venue
                 </label>
                 <label>
                     <input type="radio" name="venue_select_type" value="new" onclick="toggleVenueFields('new')"> Add New Venue
                 </label>
-                
+
                 <div id="existingVenueFields">
                     <label for="venue_id_existing">Select Venue</label>
                     <select id="venue_id_existing" name="venue_id_existing" required>
@@ -294,17 +335,17 @@ mysqli_close($conn);
                 <div id="newVenueFields" style="display:none;">
                     <label for="venue_name_new">New Venue Name</label>
                     <input type="text" id="venue_name_new" name="venue_name_new">
-                    
+
                     <label for="address_new">Address</label>
                     <input type="text" id="address_new" name="address_new">
 
                     <label for="capacity_new">Capacity</label>
                     <input type="number" id="capacity_new" name="capacity_new" min="1">
                 </div>
-                
+
                 <label for="event_date">Date</label>
                 <input type="date" id="event_date" name="event_date" required>
-                
+
                 <label for="start_time">Start Time</label>
                 <input type="time" id="start_time" name="start_time" required>
 
@@ -313,25 +354,26 @@ mysqli_close($conn);
 
                 <label for="ticket_price">Ticket Price</label>
                 <input type="number" step="0.01" id="ticket_price" name="ticket_price" required>
-                
+
                 <button type="submit" name="add_event">Save Event</button>
             </form>
         </div>
     </div>
 
     <div id="addCategoryModal" class="modal">
-    <div class="modal-content">
-        <span  class="close">&times;</span>
-        <h2>Add New Category</h2>
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-            
-            <label for="category_name">Category Name</label>
-            <input type="text" id="category_name" name="category_name" required>
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New Category</h2>
+            <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
 
-            <button type="submit" name="add_category">Save Category</button>
-        </form>
+                <label for="category_name">Category Name</label>
+                <input type="text" id="category_name" name="category_name" required>
+
+                <button type="submit" name="add_category">Save Category</button>
+            </form>
+        </div>
     </div>
-</div>
-<script src="manage_events.js"></script>
+    <script src="manage_events.js"></script>
 </body>
+
 </html>

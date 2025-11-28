@@ -15,7 +15,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a></li>
         
         <li><a href="user_management.php">User Management</a></li>
-        <li><a href="bookings.php">Bookings</a></li>
+        <li><a href="../bookings/bookings.php" <?php if($current_page == 'bookings.php') echo 'class="active"'; ?>>Bookings</a></li>
         <li><a href="logout.php" class="logout">Logout</a></li>
     </ul>
 </nav>
