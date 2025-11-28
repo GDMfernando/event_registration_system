@@ -1,4 +1,3 @@
-
 function toggleVenueFields(type) {
     const existingFields = document.getElementById('existingVenueFields');
     const newFields = document.getElementById('newVenueFields');
@@ -26,21 +25,17 @@ function toggleVenueFields(type) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Event Modal Elements
+
     var eventModal = document.getElementById("addEventModal");
-    var eventBtn = document.getElementById("addNewEventBtn");
+    var eventBtn = document.getElementById("addNewEventBtn") || document.getElementById("dashboardAddEventBtn");
     
-    // Select the close button for the event modal (assuming it's the first one in the DOM)
-    // FIX: Using querySelector to target the first close button in the specific modal to avoid conflicts
-    var eventClose = eventModal.querySelector(".close"); 
+    var eventClose = eventModal ? eventModal.querySelector(".close") : null;
 
     // Category Modal Elements
     var categoryModal = document.getElementById("addCategoryModal");
     var categoryBtn = document.getElementById("addNewCategoryBtn");
     
-    // Select the close button for the category modal (assuming it's the close button within that modal)
-    var categoryClose = categoryModal.querySelector(".close"); 
-
+    var categoryClose = categoryModal ? categoryModal.querySelector(".close") : null;
     // ----------------------------------------------------
     // Event Modal Handlers
     if (eventBtn) {
@@ -55,8 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ----------------------------------------------------
-    // Category Modal Handlers
+
     if (categoryBtn) {
         categoryBtn.onclick = function() {
             categoryModal.style.display = "block";
@@ -75,10 +69,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (event.target == eventModal) {
             eventModal.style.display = "none";
         }
-        if (event.target == categoryModal) {
+        if (categoryModal && event.target == categoryModal) { 
             categoryModal.style.display = "none";
         }
     }
 
-    toggleVenueFields('existing');
+    if (document.getElementById('existingVenueFields')) {
+        toggleVenueFields('existing');
+    }
 });
