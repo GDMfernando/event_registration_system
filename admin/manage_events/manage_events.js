@@ -40,6 +40,30 @@ function fetchEventDetails(eventId, modal) {
                 document.getElementById('edit_ticket_price').value = event.ticket_price;
                 document.getElementById('edit_status').value = event.status;
               
+                const imagePreviewDiv = document.getElementById('current_image_preview');
+                imagePreviewDiv.innerHTML = ''; // Clear previous content
+
+                if (event.image_path) {
+                    const label = document.createElement('p');
+                    label.textContent = 'Current Image:';
+                    label.style.fontWeight = 'bold';
+                    label.style.marginBottom = '5px';
+                    
+                    const img = document.createElement('img');
+                    // Use the image_path received from the PHP server
+                    img.src = event.image_path; 
+                    img.alt = 'Current Event Image';
+                    img.style.maxWidth = '200px'; 
+                    img.style.maxHeight = '200px'; 
+                    img.style.marginTop = '10px';
+                    img.style.borderRadius = '4px';
+                    
+                    imagePreviewDiv.appendChild(label);
+                    imagePreviewDiv.appendChild(img);
+                } else {
+                    imagePreviewDiv.innerHTML = '<p style="color: #999;">No image currently set.</p>';
+                }
+                
                 // Display the modal
                 modal.style.display = "block";
 

@@ -2,7 +2,7 @@
     <div class="modal-content">
         <span class="close edit-close">&times;</span>
         <h2>Edit Event</h2>
-        <form id="editEventForm" action="manage_events.php" method="POST">
+        <form id="editEventForm" action="manage_events.php" method="POST" enctype="multipart/form-data">
             <input type="hidden" id="edit_event_id" name="event_id" required>
 
             <label for="edit_title">Event Title</label>
@@ -42,7 +42,7 @@
 
             <label for="edit_ticket_price">Ticket Price</label>
             <input type="number" step="0.01" id="edit_ticket_price" name="ticket_price" required>
-            
+
             <label for="edit_status">Status</label>
             <select id="edit_status" name="status">
                 <option value="Active">Active</option>
@@ -51,6 +51,12 @@
                 <option value="Completed">Completed</option>
             </select>
 
+
+            <label for="edit_event_image">Update Event Image (Optional)</label>
+            <input type="file" id="edit_event_image" name="edit_event_image" accept="image/*">
+            <small></small>
+
+            <div id="current_image_preview"></div>
 
             <button type="submit" name="update_event">Update Event</button>
         </form>

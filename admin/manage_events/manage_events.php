@@ -2,6 +2,12 @@
 
 include('../../db/db_connect.php');
 
+
+$upload_dir = '../../uploads/event_images/';
+if (!is_dir($upload_dir)) {
+    mkdir($upload_dir, 0777, true);
+}
+
 function get_all_events($conn)
 {
     $sql = "SELECT 
@@ -12,6 +18,7 @@ function get_all_events($conn)
                 e.end_time,
                 e.category_id,
                 e.ticket_price,
+                e.image_path,
                 v.venue_name, 
                 c.category_name,
                 e.available_seats,    
@@ -33,7 +40,7 @@ function get_all_events($conn)
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
 
-    // 1. Get Event Data (No change here, but included for context)
+    // 1. Get Event Data
     $title           = mysqli_real_escape_string($conn, $_POST['title']);
     $description     = mysqli_real_escape_string($conn, $_POST['description']);
     $category_id     = mysqli_real_escape_string($conn, $_POST['category_id']);
@@ -42,8 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
     $end_time        = mysqli_real_escape_string($conn, $_POST['end_time']);
     $ticket_price    = mysqli_real_escape_string($conn, $_POST['ticket_price']);
 
-
-    // 2. Get Venue Data (New or Existing)
+    // 2. Handle Venue Selection
     $venue_select_type = isset($_POST['venue_select_type']) ? $_POST['venue_select_type'] : 'existing';
     $venue_id_existing = isset($_POST['venue_id_existing']) ? $_POST['venue_id_existing'] : '';
     $final_venue_id = null;
@@ -88,26 +94,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
         exit();
     }
 
+    // 3. Handle Image Upload
+    $image_path = null;
+    if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] == 0) {
+        $file_info = $_FILES['event_image'];
+        $file_name = $file_info['name'];
+        $file_tmp = $file_info['tmp_name'];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
-    // 3. Insert Event using $final_venue_id
+        // Generate a unique filename to prevent overwriting
+        $new_file_name = uniqid('event_img_', true) . '.' . $file_ext;
+        $target_file = $upload_dir . $new_file_name;
+
+        // Check if file is an actual image (basic check)
+        $check = getimagesize($file_tmp);
+        if ($check !== false) {
+            if (move_uploaded_file($file_tmp, $target_file)) {
+                // Success: Store the path/filename relative to the site
+                $image_path = mysqli_real_escape_string($conn, $target_file);
+            } else {
+                // Failed to move file
+                echo "<script>alert('ERROR: Could not upload image file.');</script>";
+                error_log("File upload error: Failed to move uploaded file to target.");
+                // You might choose to exit here or continue without an image
+            }
+        } else {
+            echo "<script>alert('ERROR: Uploaded file is not a valid image.');</script>";
+            // You might choose to exit here or continue without an image
+        }
+    }
+
+    // 4. Insert Event Data
     if ($final_venue_id !== null) {
         $sql = "INSERT INTO events (
-                    title, description, category_id, venue_id, event_date, start_time, end_time, ticket_price
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                title, description, category_id, venue_id, event_date, start_time, end_time, ticket_price, image_path
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 9 placeholders
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
             mysqli_stmt_bind_param(
                 $stmt,
-                "ssiisssd",
+                "ssiisssds", // <-- CORRECT: 9 characters for the 9 columns
                 $title,
                 $description,
                 $category_id,
-                $final_venue_id, // Use the dynamically determined ID
+                $final_venue_id,
                 $event_date,
                 $start_time,
                 $end_time,
-                $ticket_price
-
+                $ticket_price,
+                $image_path
             );
 
             if (mysqli_stmt_execute($stmt)) {
@@ -139,8 +174,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetch_event' && isset($_GET['
         // Failed to fetch data
         echo json_encode(['success' => false, 'message' => 'Event not found or database error.']);
     }
-    // STOP execution for the AJAX request
-    exit(); 
+
+    exit();
 }
 
 if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
@@ -171,8 +206,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
     $start_time      = mysqli_real_escape_string($conn, $_POST['start_time']);
     $end_time        = mysqli_real_escape_string($conn, $_POST['end_time']);
     $ticket_price    = mysqli_real_escape_string($conn, $_POST['ticket_price']);
-    $status          = mysqli_real_escape_string($conn, $_POST['status']);
+    $status          = mysqli_real_escape_string($conn, $_POST['status'] ?? 'Active');
 
+    $current_image_path_query = "SELECT image_path FROM events WHERE event_id = ?";
+    if ($stmt_fetch = mysqli_prepare($conn, $current_image_path_query)) {
+        mysqli_stmt_bind_param($stmt_fetch, "i", $event_id);
+        mysqli_stmt_execute($stmt_fetch);
+        mysqli_stmt_bind_result($stmt_fetch, $existing_image_path);
+        mysqli_stmt_fetch($stmt_fetch);
+        mysqli_stmt_close($stmt_fetch);
+    } else {
+        $existing_image_path = null;
+    }
+    $new_image_path = $existing_image_path;
+
+    if (isset($_FILES['edit_event_image']) && $_FILES['edit_event_image']['error'] == 0) {
+        $file_info = $_FILES['edit_event_image'];
+        $file_name = $file_info['name'];
+        $file_tmp = $file_info['tmp_name'];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+        $unique_file_name = uniqid('event_img_', true) . '.' . $file_ext;
+        $target_file = $upload_dir . $unique_file_name;
+
+        if (getimagesize($file_tmp) !== false) {
+            if (move_uploaded_file($file_tmp, $target_file)) {
+
+                // Success: Set new path
+                $new_image_path = mysqli_real_escape_string($conn, $target_file);
+
+            
+                if (!empty($existing_image_path) && file_exists($existing_image_path)) {
+                    unlink($existing_image_path);
+                }
+            } else {
+                error_log("File upload error (Update): Failed to move uploaded file to target.");
+                echo "<script>alert('ERROR: Could not upload new image file.');</script>";
+            }
+        } else {
+            echo "<script>alert('ERROR: Uploaded file for update is not a valid image.');</script>";
+        }
+    }
 
     // 2. Prepare Update Query
     $sql = "UPDATE events SET
@@ -184,13 +258,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
                 start_time = ?, 
                 end_time = ?, 
                 ticket_price = ?,
+                image_path = ?,
                 status = ?
             WHERE event_id = ?";
 
     if ($stmt = mysqli_prepare($conn, $sql)) {
         mysqli_stmt_bind_param(
             $stmt,
-            "ssiisssdsi",
+            "ssiisssdssi",
             $title,
             $description,
             $category_id,
@@ -199,8 +274,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
             $start_time,
             $end_time,
             $ticket_price,
+            $new_image_path,
             $status,
-            $event_id // The WHERE clause parameter
+            $event_id
         );
 
         if (mysqli_stmt_execute($stmt)) {
@@ -230,6 +306,7 @@ function get_event_by_id($conn, $id)
                 e.category_id,
                 e.venue_id,      
                 e.ticket_price,
+                e.image_path,
                 e.available_seats,     
                 e.status, 
                 v.venue_name, 
@@ -277,7 +354,7 @@ function get_all_venues($conn)
     $sql = "SELECT venue_id, venue_name FROM event_venues ORDER BY venue_name ASC";
     $result = mysqli_query($conn, $sql);
 
-    // Check for query execution failure
+
     if ($result === false) {
         error_log("MySQL Query Error in get_all_venues: " . mysqli_error($conn));
         return array();
@@ -295,15 +372,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_category'])) {
         $sql = "INSERT INTO event_categories (category_name) VALUES (?)";
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            // Bind the category name parameter (s = string)
             mysqli_stmt_bind_param($stmt, "s", $category_name);
 
             if (mysqli_stmt_execute($stmt)) {
-                // Success: Redirect to prevent form resubmission
+                // Success
                 header("location: manage_events.php?status=category_added");;
                 exit();
             } else {
-                // Execution failed (e.g., duplicate entry if column is unique)
+
                 error_log("MySQLi Execute Error (Category): " . mysqli_stmt_error($stmt));
                 echo "<script>alert('ERROR: Could not execute category query. Check PHP error log for details.');</script>";
             }

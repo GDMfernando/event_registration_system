@@ -2,7 +2,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Add New Event</h2>
-           <form action="../manage_events/manage_events.php" method="POST">
+            <form action="../manage_events/manage_events.php" method="POST" enctype="multipart/form-data">
 
                 <label for="title">Event Title</label>
                 <input type="text" id="title" name="title" required>
@@ -63,6 +63,9 @@
 
                 <label for="ticket_price">Ticket Price</label>
                 <input type="number" step="0.01" id="ticket_price" name="ticket_price" required>
+
+                <label for="event_image">Event Image (Optional)</label>
+                <input type="file" id="event_image" name="event_image" accept="image/*">
 
                 <button type="submit" name="add_event">Save Event</button>
             </form>
