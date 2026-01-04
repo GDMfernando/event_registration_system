@@ -1,6 +1,13 @@
 <?php
 
-include('../../db/db_connect.php');
+session_start();
+
+// Check if admin is logged in, if not redirect to login page
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: ../admin_login.php");
+    exit();
+    }
+include('../../db_connect.php');
 
 function get_all_categories($conn)
 {

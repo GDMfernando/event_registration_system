@@ -1,6 +1,6 @@
 <?php
 
-include('../../db/db_connect.php');
+include('../../db_connect.php');
 
 
 $upload_dir = '../../uploads/event_images/';

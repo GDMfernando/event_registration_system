@@ -1,6 +1,6 @@
 <?php
 
-include('../../db/db_connect.php');
+include('../../db_connect.php');
 
 // Function to fetch all bookings with associated User Name and Event Title
 function get_all_bookings($conn) {

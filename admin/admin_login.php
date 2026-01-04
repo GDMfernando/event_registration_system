@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['admin_id'] = $row['user_id'];
         $_SESSION['admin_username'] = $row['username']; // Keep username for dashboard display
         $_SESSION['admin_email'] = $row['email'];
-        header("Location: dashboard.php"); // Redirect to dashboard
+        header("Location: dashboard/dashboard.php"); // Redirect to dashboard
         exit();
       } else {
         $error = "Invalid email or password.";
