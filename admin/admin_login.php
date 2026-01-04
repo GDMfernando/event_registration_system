@@ -3,6 +3,12 @@ session_start();
 include "../db_connect.php";
 
 $error = "";
+$success = "";
+
+if (isset($_GET['msg'])) {
+  $success = htmlspecialchars($_GET['msg']);
+}
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $email = trim($_POST['email']);
@@ -50,6 +56,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
   <div class="login-container">
     <h2>Admin Login</h2>
+
+    <?php if (!empty($success)): ?>
+      <div class="success-msg" style="color: #155724; background-color: #d4edda; border-color: #c3e6cb; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+        <?php echo $success; ?>
+      </div>
+    <?php endif; ?>
 
     <?php if (!empty($error)): ?>
       <div class="error-msg"><?php echo $error; ?></div>
