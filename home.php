@@ -19,6 +19,7 @@ $ven_result = mysqli_query($conn, "SELECT venue_id, venue_name FROM event_venues
 // ---- Single search text (category, venue or event name) ----
 $search_text = isset($_GET['q']) ? trim($_GET['q']) : "";
 
+// Try to query database events
 $sql = "SELECT e.*, c.category_name, v.venue_name
         FROM events e
         LEFT JOIN categories c ON e.category_id = c.category_id
@@ -123,12 +124,13 @@ $events_result = mysqli_query($conn, $sql);
             <?php
             $events = [];
             if ($events_result && mysqli_num_rows($events_result) > 0) {
+                // Load events from database
                 while ($row = mysqli_fetch_assoc($events_result)) {
                     $events[] = $row;
                 }
-            } elseif ($search_text === "") {
-                // Sample events data - only show if not searching and no DB events
-                $events = [
+            } else {
+                // Sample events data - use when no DB events found
+                $sample_events = [
                     [
                         'event_id' => 9991,
                         'title' => 'Summer Music Festival',
@@ -157,6 +159,24 @@ $events_result = mysqli_query($conn, $sql);
                         'description' => 'Explore contemporary works from local and international artists.'
                     ]
                 ];
+
+                // Filter sample events based on search text
+                if ($search_text !== "") {
+                    $search_lower = strtolower($search_text);
+                    foreach ($sample_events as $event) {
+                        // Search in title, category, and venue (case-insensitive)
+                        if (
+                            stripos($event['title'], $search_text) !== false ||
+                            stripos($event['category_name'], $search_text) !== false ||
+                            stripos($event['venue_name'], $search_text) !== false
+                        ) {
+                            $events[] = $event;
+                        }
+                    }
+                } else {
+                    // No search - show all sample events
+                    $events = $sample_events;
+                }
             }
             ?>
 
@@ -192,7 +212,7 @@ $events_result = mysqli_query($conn, $sql);
                             <a href="event_details.php?id=<?php echo $event['event_id']; ?>" class="btn-main-sm btn-outline">
                                 View Details
                             </a>
-                            <a href="user/seat_plan.php?event_id=<?php echo $event['event_id']; ?>" class="btn-main-sm">
+                            <a href="user/booking/seat_plan.php?event_id=<?php echo $event['event_id']; ?>" class="btn-main-sm">
                                 Buy Tickets
                             </a>
                         </div>
