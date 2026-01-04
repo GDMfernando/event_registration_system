@@ -36,8 +36,6 @@ if ($search_text !== "") {
 
 $sql .= " ORDER BY e.event_date ASC";
 $events_result = mysqli_query($conn, $sql);
-
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -46,6 +44,7 @@ $events_result = mysqli_query($conn, $sql);
     <meta charset="UTF-8">
     <title>Home - Event Registration System</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
@@ -55,9 +54,41 @@ $events_result = mysqli_query($conn, $sql);
         <nav class="nav">
             <div class="nav-left">
                 <a href="home.php" class="nav-link active">Home</a>
-                <a href="events.php" class="nav-link">Events</a>
-                <a href="events.php?cat=Sports" class="nav-link">Sports</a>
-                <a href="events.php?cat=Theatre" class="nav-link">Theatre</a>
+
+                <!-- EVENTS DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="eventsToggle">
+                        Events <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="eventsMenu">
+                        <a href="events.php?cat=Concerts">Concerts</a>
+                        <a href="events.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="events.php?cat=Tech">Tech</a>
+                    </div>
+                </div>
+
+                <!-- SPORTS DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="sportsToggle">
+                        Sports <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="sportsMenu">
+                        <a href="events.php?cat=Rugby">Rugby</a>
+                        <a href="events.php?cat=Cricket">Cricket</a>
+                        <a href="events.php?cat=Football">Football</a>
+                    </div>
+                </div>
+
+                <!-- THEATRE DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="theatreToggle">
+                        Theatre <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="theatreMenu">
+                        <a href="events.php?cat=Drama">Drama</a>
+                    </div>
+                </div>
+
                 <a href="about.php" class="nav-link">About</a>
             </div>
 
@@ -193,10 +224,10 @@ $events_result = mysqli_query($conn, $sql);
                 <p>Email: support@eventsystem.com</p>
                 <p>Phone: +1 (555) 123-4567</p>
                 <div class="social-links">
-                    <a href="#">Facebook</a>
-                    <a href="#">Twitter</a>
-                    <a href="#">Instagram</a>
-                    <a href="#">LinkedIn</a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
         </div>
@@ -206,9 +237,6 @@ $events_result = mysqli_query($conn, $sql);
     </footer>
 
     <script src="script.js"></script>
-    <script>
-        // Dropdown script removed as dropdowns are no longer used
-    </script>
 </body>
 
 </html>
