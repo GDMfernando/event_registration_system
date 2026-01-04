@@ -22,14 +22,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   if (mysqli_num_rows($result) > 0) {
     $token = bin2hex(random_bytes(32)); // 64 characters
     $token_hash = hash('sha256', $token);
-    $expire = date("Y-m-d H:i:s", strtotime('+1 hour'));
+    // Use MySQL timestamp for consistency
+    // $expire = date("Y-m-d H:i:s", strtotime('+1 hour')); 
 
-    $update_sql = "UPDATE user SET reset_token_hash = '$token_hash', reset_token_expires_at = '$expire' WHERE email = '$email'";
+    $update_sql = "UPDATE user SET reset_token_hash = '$token_hash', reset_token_expires_at = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = '$email'";
     if (mysqli_query($conn, $update_sql)) {
       // In a real application, send email here.
       // For demo purposes, we'll show the link.
       $resetLink = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/reset_password.php?token=" . $token;
-      $success = "A password reset link has been generated (Simulated Email): <br><a href='$resetLink'>$resetLink</a>";
+      // Redirect to reset_password.php directly
+      header("Location: reset_password.php?token=" . $token);
+      exit();
     } else {
       $error = "Something went wrong. Please try again.";
     }
