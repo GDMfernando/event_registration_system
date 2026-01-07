@@ -24,6 +24,8 @@ body {
     color: #007bff;
     border-bottom: 2px solid #e9ecef;
     padding-bottom: 10px;
+    font-weight: 600; 
+    font-size: 24px;
 }
 
 /* --- Statistics Grid --- */
@@ -55,12 +57,12 @@ body {
 
 .stat-card h3 {
     color: #6c757d;
-    font-size: 1.1em;
-    margin-bottom: 10px;
+     font-size: 1.1em; 
+      margin-bottom: 10px;
 }
 
 .stat-number {
-    font-size: 2.5em;
+       font-size: 2.5em;
     font-weight: bold;
     color: #333;
     margin-bottom: 5px;
@@ -106,4 +108,21 @@ small {
 
 .secondary-btn:hover {
     background-color: #5a6268;
+}
+
+.welcome-section {
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.welcome-section h2 {
+    color: #333;
+    font-weight: 700; /* Made this BOLD */
+    font-size: 1.8em;
+}
+
+.admin-name {
+    color: #007bff;
+    font-weight: 700; /* Extra bold for the name */
 }

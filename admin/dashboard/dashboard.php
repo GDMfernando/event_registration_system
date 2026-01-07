@@ -7,6 +7,9 @@ if (!isset($_SESSION['admin_id'])) {
     header("Location: ../admin_login.php");
     exit();
     }
+
+    $admin_display_name = isset($_SESSION['admin_fullname']) ? $_SESSION['admin_fullname'] : 'Admin';
+
 include('../../db_connect.php');
 
 function get_all_categories($conn)
@@ -78,7 +81,7 @@ mysqli_close($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Registration Dashboard</title>
-    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="./css/dashboard.css">
     <link rel="stylesheet" href="../includes/navbar.css">
     <link rel="stylesheet" href="../manage_events/css/manage_events.css">
 </head>
@@ -87,6 +90,12 @@ mysqli_close($conn);
     <?php include('../includes/navbar.php'); ?>
 
     <div class="container">
+
+   <div class="welcome-section">
+    <h2>Welcome back, <span class="admin-name"><?php echo htmlspecialchars($admin_display_name); ?></span>!</h2>
+    
+</div>
+        
         <h1>📊 Dashboard Statistics</h1>
 
         <div class="stats-grid">
