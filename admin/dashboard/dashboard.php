@@ -95,9 +95,9 @@ mysqli_close($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Registration Dashboard</title>
-    <link rel="stylesheet" href="./css/dashboard.css">
+    <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="../includes/navbar.css">
-    <link rel="stylesheet" href="../manage_events/css/manage_events.css">
+    <link rel="stylesheet" href="../manage_events/manage_events.css">
 </head>
 
 <body>
@@ -105,12 +105,12 @@ mysqli_close($conn);
 
     <div class="container">
 
-   <div class="welcome-section">
-    <h2>Welcome back, <span class="admin-name"><?php echo htmlspecialchars($admin_display_name); ?></span>!</h2>
-    
-</div>
-        
-        <h1>📊 Dashboard Statistics</h1>
+<div class="welcome-section">
+        <h2>Welcome back, <span class="admin-name"><?php echo htmlspecialchars($admin_display_name); ?></span>! 👋</h2>
+        <p>System operational. Here is your current overview.</p>
+    </div>
+
+    <h1>📊 Dashboard Statistics</h1>
 
         <div class="stats-grid">
 
@@ -121,10 +121,10 @@ mysqli_close($conn);
             </div>
 
             <div class="stat-card primary">
-                <h3>Active Events</h3>
-                <p class="stat-number" id="active-events"><?php echo $active_events; ?></p>
-                <small>Currently open for registration</small>
-            </div>
+    <h3><span class="pulse-indicator"></span>Active Events</h3>
+    <p class="stat-number"><?php echo $active_events; ?></p>
+    <small>Currently open for registration</small>
+</div>
 
             <div class="stat-card secondary">
                 <h3>Registered Users</h3>
@@ -135,17 +135,22 @@ mysqli_close($conn);
             <div class="stat-card accent">
                 <h3>Total Bookings</h3>
                 <p class="stat-number" id="total-bookings"><?php echo $total_bookings; ?></p>
+                <div class="progress-bar-container">
+        <div class="progress-fill" style="width: 65%;"></div> </div>
                 <small>Total tickets reserved</small>
             </div>
 
         </div>
 
         <div class="content-placeholder">
-            <h2>Quick Actions</h2>
-            <p>This area can be used for quick links, recent activities, or future charts.</p>
-            <button id="dashboardAddEventBtn" class="btn">Add New Event</button>
-            <button class="btn secondary-btn">View Reports</button>
+        <h2>⚡ Quick Actions</h2>
+        <p>Commonly used administrative tasks.</p>
+        
+        <div class="action-group">
+            <a style="text-decoration : none" id="dashboardAddEventBtn" class="btn">➕ Add New Event</a>
+            <a style="text-decoration : none" href="../bookings/bookings.php" class="btn">🎟️ Manage Bookings</a>
         </div>
+    </div>
 
     </div>
     <?php include('../manage_events/add_event_modal.php'); ?>

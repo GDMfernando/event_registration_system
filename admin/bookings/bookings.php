@@ -77,7 +77,7 @@ mysqli_close($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Management</title>
-    <link rel="stylesheet" href="../manage_events/css/manage_events.css">
+    <link rel="stylesheet" href="../manage_events/manage_events.css">
     <link rel="stylesheet" href="../includes/navbar.css">
     <link rel="stylesheet" href="admin_bookings.css">
 </head>
