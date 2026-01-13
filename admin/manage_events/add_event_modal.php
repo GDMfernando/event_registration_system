@@ -61,12 +61,25 @@
                 <label for="end_time">End Time</label>
                 <input type="time" id="end_time" name="end_time">
 
-                <label for="ticket_price">Ticket Price</label>
-                <input type="number" step="0.01" id="ticket_price" name="ticket_price" required>
-
-                <label for="event_image">Event Image (Optional)</label>
-                <input type="file" id="event_image" name="event_image" accept="image/*">
-
+                <h3>Ticket Pricing</h3>
+                <div class="ticket_price" >
+                    <div>
+                        <label for="price_vip">VIP Price</label>
+                        <input type="number" step="0.01" id="price_vip" name="price_vip" placeholder="0.00" required>
+                    </div>
+                    <div>
+                        <label for="price_regular">Regular Price</label>
+                        <input type="number" step="0.01" id="price_regular" name="price_regular" placeholder="0.00" required>
+                    </div>
+                    <div>
+                        <label for="price_balcony">Balcony Price</label>
+                        <input type="number" step="0.01" id="price_balcony" name="price_balcony" placeholder="0.00" required>
+                    </div>
+                </div>
+                <div>
+                    <label for="event_image">Event Image (Optional)</label>
+                    <input type="file" id="event_image" name="event_image" accept="image/*">
+                </div>
                 <button type="submit" name="add_event">Save Event</button>
             </form>
         </div>

@@ -17,13 +17,13 @@ function get_all_events($conn)
                 e.start_time, 
                 e.end_time,
                 e.category_id,
-                e.ticket_price,
                 e.image_path,
                 v.venue_name, 
                 c.category_name,
                 e.available_seats,    
                 e.status,              
-                e.created_at
+                e.created_at,
+                e.price_vip, e.price_regular, e.price_balcony
             FROM events e
             JOIN event_venues v ON e.venue_id = v.venue_id 
             JOIN event_categories c ON e.category_id = c.category_id
@@ -47,7 +47,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
     $event_date      = mysqli_real_escape_string($conn, $_POST['event_date']);
     $start_time      = mysqli_real_escape_string($conn, $_POST['start_time']);
     $end_time        = mysqli_real_escape_string($conn, $_POST['end_time']);
-    $ticket_price    = mysqli_real_escape_string($conn, $_POST['ticket_price']);
+    $price_vip     = mysqli_real_escape_string($conn, $_POST['price_vip']);
+    $price_regular = mysqli_real_escape_string($conn, $_POST['price_regular']);
+    $price_balcony = mysqli_real_escape_string($conn, $_POST['price_balcony']);
 
     // 2. Handle Venue Selection
     $venue_select_type = isset($_POST['venue_select_type']) ? $_POST['venue_select_type'] : 'existing';
@@ -127,13 +129,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
     // 4. Insert Event Data
     if ($final_venue_id !== null) {
         $sql = "INSERT INTO events (
-                title, description, category_id, venue_id, event_date, start_time, end_time, ticket_price, image_path
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 9 placeholders
+            title, description, category_id, venue_id, event_date, 
+            start_time, end_time, price_vip, price_regular, price_balcony, image_path
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
             mysqli_stmt_bind_param(
                 $stmt,
-                "ssiisssds", // <-- CORRECT: 9 characters for the 9 columns
+                "ssiisssddds", // <-- CORRECT: 9 characters for the 9 columns
                 $title,
                 $description,
                 $category_id,
@@ -141,7 +144,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
                 $event_date,
                 $start_time,
                 $end_time,
-                $ticket_price,
+                $price_vip,
+                $price_regular,
+                $price_balcony,
                 $image_path
             );
 
@@ -205,7 +210,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
     $event_date      = mysqli_real_escape_string($conn, $_POST['event_date']);
     $start_time      = mysqli_real_escape_string($conn, $_POST['start_time']);
     $end_time        = mysqli_real_escape_string($conn, $_POST['end_time']);
-    $ticket_price    = mysqli_real_escape_string($conn, $_POST['ticket_price']);
+    $price_vip     = mysqli_real_escape_string($conn, $_POST['price_vip']);
+    $price_regular = mysqli_real_escape_string($conn, $_POST['price_regular']);
+    $price_balcony = mysqli_real_escape_string($conn, $_POST['price_balcony']);
     $status          = mysqli_real_escape_string($conn, $_POST['status'] ?? 'Active');
 
     $current_image_path_query = "SELECT image_path FROM events WHERE event_id = ?";
@@ -235,7 +242,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
                 // Success: Set new path
                 $new_image_path = mysqli_real_escape_string($conn, $target_file);
 
-            
+
                 if (!empty($existing_image_path) && file_exists($existing_image_path)) {
                     unlink($existing_image_path);
                 }
@@ -257,7 +264,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
                 event_date = ?, 
                 start_time = ?, 
                 end_time = ?, 
-                ticket_price = ?,
+                price_vip = ?, 
+                price_regular = ?, 
+                price_balcony = ?,
                 image_path = ?,
                 status = ?
             WHERE event_id = ?";
@@ -265,7 +274,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
     if ($stmt = mysqli_prepare($conn, $sql)) {
         mysqli_stmt_bind_param(
             $stmt,
-            "ssiisssdssi",
+            "ssiisssddsssi",
             $title,
             $description,
             $category_id,
@@ -273,7 +282,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
             $event_date,
             $start_time,
             $end_time,
-            $ticket_price,
+            $price_vip,
+            $price_regular,
+            $price_balcony,
             $new_image_path,
             $status,
             $event_id
@@ -305,7 +316,9 @@ function get_event_by_id($conn, $id)
                 e.end_time,
                 e.category_id,
                 e.venue_id,      
-                e.ticket_price,
+                e.price_vip, 
+            e.price_regular,  
+            e.price_balcony,
                 e.image_path,
                 e.available_seats,     
                 e.status, 
@@ -415,7 +428,6 @@ mysqli_close($conn);
 
         <button id="addNewEventBtn" class="add-event-btn">+ Add New Event</button>
         <button id="addNewCategoryBtn" class="add-event-btn">+ Add New Category</button>
-        <h2>Existing Events</h2>
 
         <table class="event-table">
             <thead>
@@ -426,7 +438,7 @@ mysqli_close($conn);
                     <th>Date</th>
                     <th>Time</th>
                     <th>Venue</th>
-                    <th>Price</th>
+                    <th>Prices (VIP/Reg/Bal)</th>
                     <th>Seats Left</th>
                     <th>Status</th>
                     <th>Created At</th>
@@ -443,7 +455,11 @@ mysqli_close($conn);
                             <td><?php echo htmlspecialchars($event['event_date']); ?></td>
                             <td><?php echo htmlspecialchars($event['start_time']) . ' - ' . htmlspecialchars($event['end_time']); ?></td>
                             <td><?php echo htmlspecialchars($event['venue_name']); ?></td>
-                            <td><?php echo htmlspecialchars($event['ticket_price']); ?></td>
+                            <td>
+                                V: <?php echo number_format($event['price_vip'], 2); ?><br>
+                                R: <?php echo number_format($event['price_regular'], 2); ?><br>
+                                B: <?php echo number_format($event['price_balcony'], 2); ?>
+                            </td>
                             <td><?php echo htmlspecialchars($event['available_seats']); ?></td>
                             <td><?php echo htmlspecialchars($event['status']); ?></td>
                             <td><?php echo htmlspecialchars($event['created_at']); ?></td>

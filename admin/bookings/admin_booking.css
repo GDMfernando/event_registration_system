@@ -1,0 +1,8 @@
+.status-confirmed { color: #28a745; font-weight: bold; }
+.status-pending { color: #ffc107; font-weight: bold; }
+.status-cancelled { 
+    color: #dc3545; 
+    font-weight: bold; 
+    text-decoration: line-through; 
+    opacity: 0.7;
+}

@@ -61,11 +61,25 @@ function get_active_event_count($conn)
     return (int)$row['active_events'];
 }
 
+function get_user_count_by_role($conn, $role) {
+    $sql = "SELECT COUNT(user_id) AS count FROM user WHERE role = '$role'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+    return (int)$row['count'];
+}
+
+function get_total_bookings_count($conn) {
+    // Only count confirmed/attended bookings if you want to be accurate
+    $sql = "SELECT COUNT(booking_id) AS count FROM event_booking WHERE status != 'cancelled'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+    return (int)$row['count'];
+}
 
 $total_events = get_total_event_count($conn);
 $active_events = get_active_event_count($conn);
-$total_users = 1500;
-$total_bookings = 3200;
+$total_users = get_user_count_by_role($conn, 'user');
+$total_bookings = get_total_bookings_count($conn);
 
 $categories = get_all_categories($conn);
 $venues = get_all_venues($conn);

@@ -37,7 +37,9 @@ function fetchEventDetails(eventId, modal) {
                 document.getElementById('edit_event_date').value = event.event_date;
                 document.getElementById('edit_start_time').value = event.start_time ? event.start_time.substring(0, 5) : ''; 
                 document.getElementById('edit_end_time').value = event.end_time ? event.end_time.substring(0, 5) : '';
-                document.getElementById('edit_ticket_price').value = event.ticket_price;
+                document.getElementById('edit_price_vip').value = event.price_vip;
+                document.getElementById('edit_price_regular').value = event.price_regular;
+                document.getElementById('edit_price_balcony').value = event.price_balcony;
                 document.getElementById('edit_status').value = event.status;
               
                 const imagePreviewDiv = document.getElementById('current_image_preview');
@@ -145,7 +147,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("edit_event_id").value = eventId;
         document.getElementById("edit_title").value = title;
         document.getElementById("edit_event_date").value = date;
-        document.getElementById("edit_ticket_price").value = price;
         document.getElementById("edit_status").value = status;
 
 
