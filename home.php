@@ -4,10 +4,10 @@ include "db_connect.php";
 
 /*
   This home page is ONLY for not-logged-in users.
-  If someone is logged in, redirect them elsewhere (e.g. user_home.php).
+  If someone is logged in, redirect them to logged_home.php.
 */
 if (isset($_SESSION['user_id'])) {
-    header("Location: user_home.php"); // change to your logged-in home page
+    header("Location: logged_home.php"); // Redirect logged-in users to their home page
     exit();
 }
 
@@ -22,8 +22,8 @@ $search_text = isset($_GET['q']) ? trim($_GET['q']) : "";
 // Try to query database events
 $sql = "SELECT e.*, c.category_name, v.venue_name
         FROM events e
-        LEFT JOIN categories c ON e.category_id = c.category_id
-        LEFT JOIN venues v ON e.venue_id = v.venue_id
+        LEFT JOIN event_categories c ON e.category_id = c.category_id
+        LEFT JOIN event_venues v ON e.venue_id = v.venue_id
         WHERE e.status = 'active'";
 
 if ($search_text !== "") {
@@ -90,11 +90,11 @@ $events_result = mysqli_query($conn, $sql);
                     </div>
                 </div>
 
-                <a href="about.php" class="nav-link">About</a>
+                <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="login.php" class="btn-nav">Sign In</a>
+                <a href="user/user_login.php" class="btn-nav">Sign In</a>
                 <a href="register.php" class="btn-nav btn-nav-outline">Register</a>
             </div>
         </nav>
@@ -128,55 +128,6 @@ $events_result = mysqli_query($conn, $sql);
                 while ($row = mysqli_fetch_assoc($events_result)) {
                     $events[] = $row;
                 }
-            } else {
-                // Sample events data - use when no DB events found
-                $sample_events = [
-                    [
-                        'event_id' => 9991,
-                        'title' => 'Summer Music Festival',
-                        'category_name' => 'Music',
-                        'venue_name' => 'City Park Arena',
-                        'event_date' => '2025-07-15',
-                        'ticket_price' => 45.00,
-                        'description' => 'Join us for a day of amazing live music and food trucks under the sun.'
-                    ],
-                    [
-                        'event_id' => 9992,
-                        'title' => 'Tech Innovators Summit',
-                        'category_name' => 'Conference',
-                        'venue_name' => 'Convention Center',
-                        'event_date' => '2025-08-20',
-                        'ticket_price' => 120.00,
-                        'description' => 'A gathering of the brightest minds in technology sharing their vision for the future.'
-                    ],
-                    [
-                        'event_id' => 9993,
-                        'title' => 'Modern Art Exhibition',
-                        'category_name' => 'Art',
-                        'venue_name' => 'Downtown Gallery',
-                        'event_date' => '2025-09-05',
-                        'ticket_price' => 15.00,
-                        'description' => 'Explore contemporary works from local and international artists.'
-                    ]
-                ];
-
-                // Filter sample events based on search text
-                if ($search_text !== "") {
-                    $search_lower = strtolower($search_text);
-                    foreach ($sample_events as $event) {
-                        // Search in title, category, and venue (case-insensitive)
-                        if (
-                            stripos($event['title'], $search_text) !== false ||
-                            stripos($event['category_name'], $search_text) !== false ||
-                            stripos($event['venue_name'], $search_text) !== false
-                        ) {
-                            $events[] = $event;
-                        }
-                    }
-                } else {
-                    // No search - show all sample events
-                    $events = $sample_events;
-                }
             }
             ?>
 
@@ -185,36 +136,52 @@ $events_result = mysqli_query($conn, $sql);
             <?php else: ?>
                 <?php foreach ($events as $event): ?>
                     <article class="event-card">
-                        <h3><?php echo htmlspecialchars($event['title']); ?></h3>
-                        <p class="event-meta">
-                            <?php echo htmlspecialchars($event['category_name'] ?? 'General'); ?>
-                            <?php if (!empty($event['category_name']) && !empty($event['venue_name']))
-                                echo " | "; ?>
-                            <?php echo htmlspecialchars($event['venue_name'] ?? 'TBA'); ?>
-                        </p>
-                        <p class="event-date">
-                            Date: <?php echo htmlspecialchars($event['event_date']); ?>
-                        </p>
-                        <p class="event-price">
-                            Price:
-                            <?php
-                            if ($event['ticket_price'] > 0) {
-                                echo '$' . number_format($event['ticket_price'], 2);
-                            } else {
-                                echo "Free";
-                            }
-                            ?>
-                        </p>
-                        <p class="event-desc">
-                            <?php echo nl2br(htmlspecialchars(substr($event['description'], 0, 120))); ?>...
-                        </p>
-                        <div class="card-actions">
-                            <a href="event_details.php?id=<?php echo $event['event_id']; ?>" class="btn-main-sm btn-outline">
-                                View Details
-                            </a>
-                            <a href="user/booking/seat_plan.php?event_id=<?php echo $event['event_id']; ?>" class="btn-main-sm">
-                                Buy Tickets
-                            </a>
+                        <?php 
+                        $img_path = $event['image_path'];
+                        // Fix path if it starts with ../ or ../../
+                        $img_path = str_replace(['../../', '../'], '', $img_path);
+                        if (!empty($img_path)): 
+                        ?>
+                            <div class="event-image">
+                                <img src="<?php echo htmlspecialchars($img_path); ?>"
+                                    alt="<?php echo htmlspecialchars($event['title']); ?>">
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="event-content">
+                            <h3><?php echo htmlspecialchars($event['title']); ?></h3>
+                            <p class="event-meta">
+                                <?php echo htmlspecialchars($event['category_name'] ?? 'General'); ?>
+                                <?php if (!empty($event['category_name']) && !empty($event['venue_name']))
+                                    echo " | "; ?>
+                                <?php echo htmlspecialchars($event['venue_name'] ?? 'TBA'); ?>
+                            </p>
+                            <p class="event-date">
+                                Date: <?php echo htmlspecialchars($event['event_date']); ?>
+                            </p>
+                            <p class="event-price">
+                                Price:
+                                <?php
+                                if ($event['ticket_price'] > 0) {
+                                    echo '$' . number_format($event['ticket_price'], 2);
+                                } else {
+                                    echo "Free";
+                                }
+                                ?>
+                            </p>
+                            <p class="event-desc">
+                                <?php echo nl2br(htmlspecialchars(substr($event['description'], 0, 120))); ?>...
+                            </p>
+                            <div class="card-actions">
+                                <a href="event_details.php?id=<?php echo $event['event_id']; ?>"
+                                    class="btn-main-sm btn-outline">
+                                    View Details
+                                </a>
+                                <a href="user/booking/seat_plan.php?event_id=<?php echo $event['event_id']; ?>"
+                                    class="btn-main-sm">
+                                    Buy Tickets
+                                </a>
+                            </div>
                         </div>
                     </article>
                 <?php endforeach; ?>
