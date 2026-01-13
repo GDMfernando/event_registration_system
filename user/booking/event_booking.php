@@ -45,7 +45,7 @@ $msg = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Handle booking logic here
     // For now, just show a success message
-    $msg = "Booking successful! (Simulation)";
+    $msg = "Ticket Details - Tickets are not reserved yet";
 }
 
 ?>
@@ -55,24 +55,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Book Event - Event Registration System</title>
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="user.css">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../../user.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="../home.php" class="nav-link">Home</a>
-                <a href="../events.php" class="nav-link">Events</a>
-                <a href="../events.php?cat=Sports" class="nav-link">Sports</a>
-                <a href="../events.php?cat=Theatre" class="nav-link">Theatre</a>
-                <a href="../about.php" class="nav-link">About</a>
+                <a href="../../home.php" class="nav-link">Home</a>
+
+                <!-- EVENTS DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="eventsToggle">
+                        Events <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="eventsMenu">
+                        <a href="../../events.php?cat=Concerts">Concerts</a>
+                        <a href="../../events.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="../../events.php?cat=Tech">Tech</a>
+                    </div>
+                </div>
+
+                <!-- SPORTS DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="sportsToggle">
+                        Sports <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="sportsMenu">
+                        <a href="../../events.php?cat=Rugby">Rugby</a>
+                        <a href="../../events.php?cat=Cricket">Cricket</a>
+                        <a href="../../events.php?cat=Football">Football</a>
+                    </div>
+                </div>
+
+                <!-- THEATRE DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="theatreToggle">
+                        Theatre <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="theatreMenu">
+                        <a href="../../events.php?cat=Drama">Drama</a>
+                    </div>
+                </div>
+
+                <a href="../../contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="../login.php" class="btn-nav">Sign In</a>
-                <a href="../register.php" class="btn-nav btn-nav-outline">Register</a>
+                <a href="../../user/user_login.php" class="btn-nav">Sign In</a>
+                <a href="../../register.php" class="btn-nav btn-nav-outline">Register</a>
             </div>
         </nav>
     </header>
@@ -107,15 +141,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php endforeach; ?>
                 <input type="hidden" name="total_price" value="<?php echo $total_price; ?>">
 
-                <div class="form-group">
-                    <label for="name">Your Name</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-
                 <button type="submit" class="btn-submit">Confirm Booking</button>
             </form>
         <?php else: ?>
@@ -135,10 +160,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul class="footer-links">
-                    <li><a href="../home.php">Home</a></li>
-                    <li><a href="../events.php">Events</a></li>
-                    <li><a href="../about.php">About Us</a></li>
-                    <li><a href="../contact.php">Contact</a></li>
+                    <li><a href="../../home.php">Home</a></li>
+                    <li><a href="../../events.php">Events</a></li>
+                    <li><a href="../../about.php">About Us</a></li>
+                    <li><a href="../../contact.php">Contact</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -146,10 +171,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <p>Email: support@eventsystem.com</p>
                 <p>Phone: +1 (555) 123-4567</p>
                 <div class="social-links">
-                    <a href="#">Facebook</a>
-                    <a href="#">Twitter</a>
-                    <a href="#">Instagram</a>
-                    <a href="#">LinkedIn</a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
         </div>
@@ -159,8 +184,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </footer>
 
     <script>
-        // Dropdown script removed
+        // Check login status and handle form submission
+        document.addEventListener('DOMContentLoaded', function () {
+            const bookingForm = document.querySelector('form[action="checkout.php"]');
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', function (e) {
+                    // Check if user is logged in (passed from PHP)
+                    const isLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
+
+                    if (!isLoggedIn) {
+                        // Prevent form submission
+                        e.preventDefault();
+
+                        // Store booking data in sessionStorage for after login
+                        const formData = new FormData(this);
+                        const bookingData = {
+                            event_id: formData.get('event_id'),
+                            seats: formData.getAll('seats[]'),
+                            total_price: formData.get('total_price')
+                        };
+                        sessionStorage.setItem('pending_booking', JSON.stringify(bookingData));
+
+                        // Redirect to login page
+                        window.location.href = '../../user/user_login.php';
+                    }
+                    // If logged in, form submits normally to checkout.php
+                });
+            }
+        });
     </script>
+    <script src="../../script.js"></script>
 </body>
 
 </html>
