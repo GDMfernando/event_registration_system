@@ -47,21 +47,22 @@
 .btn-submit {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #45a1e2;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 4px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-transform: uppercase;
+    text-transform: none;
     letter-spacing: 0.5px;
 }
 
 .btn-submit:hover {
+    background: #004bcc;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
 .btn-submit:active {
@@ -179,10 +180,11 @@
 }
 
 .seat-row {
-    display: flex;
+    display: inline-flex;
     gap: 8px;
     justify-content: center;
     position: relative;
+    margin-bottom: 10px;
 }
 
 /* Add row labels */
