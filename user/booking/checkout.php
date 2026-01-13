@@ -11,8 +11,26 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['event_id'])) {
 $event_id = intval($_POST['event_id']);
 $seats = isset($_POST['seats']) ? $_POST['seats'] : [];
 $total_price = isset($_POST['total_price']) ? floatval($_POST['total_price']) : 0;
-$name = isset($_POST['name']) ? trim($_POST['name']) : '';
-$email = isset($_POST['email']) ? trim($_POST['email']) : '';
+
+// Initialize user details
+$name = '';
+$email = '';
+
+// Fetch user details from database if logged in
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $user_sql = "SELECT full_name, email FROM user WHERE user_id = $user_id";
+    $user_result = mysqli_query($conn, $user_sql);
+    if ($user_result && mysqli_num_rows($user_result) > 0) {
+        $user_row = mysqli_fetch_assoc($user_result);
+        $name = $user_row['full_name'];
+        $email = $user_row['email'];
+    }
+} else {
+    // If not logged in, rely on POST data (though flow suggests login required)
+    $name = isset($_POST['name']) ? trim($_POST['name']) : '';
+    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+}
 
 // Fetch event details
 $event = null;
@@ -42,8 +60,9 @@ if (!$event) {
 <head>
     <meta charset="UTF-8">
     <title>Checkout - Event Registration System</title>
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="user.css">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../user.css"> <!-- Fixed path for sibling css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .checkout-container {
             display: flex;
@@ -84,7 +103,8 @@ if (!$event) {
             padding-top: 15px;
         }
 
-        .payment-form input {
+        .payment-form input,
+        .payment-form select {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
@@ -122,6 +142,18 @@ if (!$event) {
             padding-bottom: 10px;
             display: inline-block;
         }
+
+        .payment-icons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .payment-icons i {
+            font-size: 32px;
+            color: #555;
+        }
     </style>
 </head>
 
@@ -129,7 +161,13 @@ if (!$event) {
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="../home.php" class="nav-link">Home</a>
+                <a href="../../home.php" class="nav-link">Home</a>
+            </div>
+            <div class="nav-right">
+                <!-- Simple user indicator if logged in -->
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span style="color: white; margin-right: 15px;">Welcome, <?php echo htmlspecialchars($name); ?></span>
+                <?php endif; ?>
             </div>
         </nav>
     </header>
@@ -166,7 +204,7 @@ if (!$event) {
 
             <div class="summary-row total-row">
                 <span>Total Amount:</span>
-                <span>$<?php echo number_format($total_price, 2); ?></span>
+                <span>Rs. <?php echo number_format($total_price, 2); ?></span>
             </div>
         </div>
 
@@ -185,24 +223,36 @@ if (!$event) {
                     <input type="hidden" name="seats[]" value="<?php echo htmlspecialchars($seat); ?>">
                 <?php endforeach; ?>
 
+                <label>Payment Method</label>
+                <div class="payment-icons">
+                    <i class="fab fa-cc-visa" style="color: #1A1F71;"></i>
+                    <i class="fab fa-cc-mastercard" style="color: #EB001B;"></i>
+                </div>
+                <select name="payment_method" required>
+                    <option value="" disabled selected>Select Payment Method</option>
+                    <option value="visa">Visa</option>
+                    <option value="mastercard">MasterCard</option>
+                </select>
+
                 <label>Cardholder Name</label>
-                <input type="text" placeholder="John Doe" required>
+                <input type="text" name="cardholder_name" placeholder="John Doe" required
+                    value="<?php echo htmlspecialchars($name); ?>">
 
                 <label>Card Number</label>
-                <input type="text" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                <input type="text" name="card_number" placeholder="0000 0000 0000 0000" maxlength="19" required>
 
                 <div class="card-row">
                     <div style="flex: 1;">
                         <label>Expiry Date</label>
-                        <input type="text" placeholder="MM/YY" maxlength="5" required>
+                        <input type="text" name="expiry" placeholder="MM/YY" maxlength="5" required>
                     </div>
                     <div style="flex: 1;">
                         <label>CVV</label>
-                        <input type="text" placeholder="123" maxlength="3" required>
+                        <input type="text" name="cvv" placeholder="123" maxlength="3" required>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-pay">Pay $<?php echo number_format($total_price, 2); ?></button>
+                <button type="submit" class="btn-pay">Pay Rs. <?php echo number_format($total_price, 2); ?></button>
             </form>
         </div>
     </div>
@@ -239,6 +289,50 @@ if (!$event) {
             <p>&copy; <?php echo date('Y'); ?> Event Registration System. All rights reserved.</p>
         </div>
     </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const expiryInput = document.querySelector('input[name="expiry"]');
+            const form = document.querySelector('.payment-form');
+
+            // Auto-format expiry date (MM/YY)
+            expiryInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                
+                if (value.length > 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                
+                e.target.value = value;
+            });
+
+            // Validate on form submission
+            form.addEventListener('submit', function(e) {
+                const expiryValue = expiryInput.value;
+                const regex = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
+
+                if (!regex.test(expiryValue)) {
+                    alert('Please enter a valid expiry date in MM/YY format.');
+                    e.preventDefault();
+                    return;
+                }
+
+                // Check if card is expired
+                const parts = expiryValue.split('/');
+                const month = parseInt(parts[0], 10);
+                const year = parseInt('20' + parts[1], 10); // Assume 20xx
+
+                const now = new Date();
+                const currentMonth = now.getMonth() + 1;
+                const currentYear = now.getFullYear();
+
+                if (year < currentYear || (year === currentYear && month < currentMonth)) {
+                    alert('Your card has expired.');
+                    e.preventDefault();
+                    return;
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
