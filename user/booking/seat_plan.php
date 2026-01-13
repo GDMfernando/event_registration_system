@@ -30,7 +30,10 @@ $sample_events = [
 if (array_key_exists($event_id, $sample_events)) {
     $event = $sample_events[$event_id];
 } else {
-    $sql = "SELECT * FROM events WHERE event_id = $event_id";
+    $sql = "SELECT e.*, v.venue_name 
+            FROM events e
+            LEFT JOIN event_venues v ON e.venue_id = v.venue_id
+            WHERE e.event_id = $event_id";
     $result = mysqli_query($conn, $sql);
     if ($result && mysqli_num_rows($result) > 0) {
         $event = mysqli_fetch_assoc($result);
@@ -40,6 +43,89 @@ if (array_key_exists($event_id, $sample_events)) {
 if (!$event) {
     die("Event not found.");
 }
+
+// Define seat layouts for different venues
+$seat_layouts = [
+    'City Park Arena' => [
+        [
+            'name' => 'VIP',
+            'style' => 'color: #b8860b;',
+            'price' => 10000,
+            'rows' => 3,
+            'seats_per_row' => 10,
+            'class' => 'seat-vip',
+            'prefix' => 'VIP',
+            'legend_border' => '#ffd700',
+            'legend_bg' => 'linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%)'
+        ],
+        [
+            'name' => 'Regular',
+            'style' => 'color: #2c5282;',
+            'price' => 5000,
+            'rows' => 6,
+            'seats_per_row' => 12,
+            'aisle_after' => 6,
+            'class' => 'seat-regular',
+            'prefix' => 'REG',
+            'legend_border' => '#4299e1',
+            'legend_bg' => 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)'
+        ],
+        [
+            'name' => 'Balcony',
+            'style' => 'color: #2d3748; margin-top: 30px; padding-top: 20px; border-top: 2px dashed rgba(0,0,0,0.1);',
+            'price' => 3000,
+            'rows' => 4,
+            'seats_per_row' => 14,
+            'class' => 'seat-balcony',
+            'prefix' => 'BAL',
+            'legend_border' => '#718096',
+            'legend_bg' => 'linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%)'
+        ]
+    ],
+    'Convention Center' => [
+        [
+            'name' => 'Front Row (Premium)',
+            'style' => 'color: #b8860b;',
+            'price' => 12000,
+            'rows' => 4,
+            'seats_per_row' => 16,
+            'aisle_after' => 8,
+            'class' => 'seat-vip',
+            'prefix' => 'PREM',
+            'legend_border' => '#ffd700',
+            'legend_bg' => 'linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%)'
+        ],
+        [
+            'name' => 'Main Hall',
+            'style' => 'color: #2c5282;',
+            'price' => 8000,
+            'rows' => 10,
+            'seats_per_row' => 20,
+            'aisle_after' => 10,
+            'class' => 'seat-regular',
+            'prefix' => 'MAIN',
+            'legend_border' => '#4299e1',
+            'legend_bg' => 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)'
+        ]
+    ],
+    'Downtown Gallery' => [
+        [
+            'name' => 'General Admission',
+            'style' => 'color: #2c5282;',
+            'price' => 1500,
+            'rows' => 6,
+            'seats_per_row' => 10,
+            'class' => 'seat-regular',
+            'prefix' => 'GEN',
+            'legend_border' => '#4299e1',
+            'legend_bg' => 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)'
+        ]
+    ]
+];
+
+// Select layout based on venue
+$venue_name = $event['venue_name'];
+$current_layout = isset($seat_layouts[$venue_name]) ? $seat_layouts[$venue_name] : $seat_layouts['City Park Arena'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -93,11 +179,11 @@ if (!$event) {
                     </div>
                 </div>
 
-                <a href="../../about.php" class="nav-link">About</a>
+                <a href="../../contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="../../login.php" class="btn-nav">Sign In</a>
+                <a href="../../user/user_login.php" class="btn-nav">Sign In</a>
                 <a href="../../register.php" class="btn-nav btn-nav-outline">Register</a>
             </div>
         </nav>
@@ -107,25 +193,17 @@ if (!$event) {
         <h2>Select Your Seats</h2>
         <p><?php echo htmlspecialchars($event['title']); ?> | <?php echo htmlspecialchars($event['event_date']); ?></p>
 
+        <!-- DYNAMIC LEGEND -->
         <div class="legend">
-            <div class="legend-item">
-                <div class="legend-box"
-                    style="border: 3px solid #ffd700; background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);">
+            <?php foreach ($current_layout as $section): ?>
+                <div class="legend-item">
+                    <div class="legend-box"
+                        style="border: 3px solid <?php echo $section['legend_border']; ?>; background: <?php echo $section['legend_bg']; ?>;">
+                    </div>
+                    <?php echo $section['name']; ?> - Rs. <?php echo number_format($section['price']); ?>
                 </div>
-                VIP - Rs. 10,000
-            </div>
-            <div class="legend-item">
-                <div class="legend-box"
-                    style="border: 3px solid #4299e1; background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);">
-                </div>
-                Regular - Rs. 5,000
-            </div>
-            <div class="legend-item">
-                <div class="legend-box"
-                    style="border: 3px solid #718096; background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);">
-                </div>
-                Balcony - Rs. 3,000
-            </div>
+            <?php endforeach; ?>
+
             <div class="legend-item">
                 <div class="legend-box" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);"></div>
                 Selected
@@ -136,99 +214,41 @@ if (!$event) {
 
         <form action="event_booking.php?event_id=<?php echo $event_id; ?>" method="POST" id="seatForm">
             <div class="seat-map">
+                <?php foreach ($current_layout as $section): ?>
+                    <div
+                        style="margin-bottom: 25px; width: 100%; text-align: center; <?php echo isset($section['style']) && strpos($section['style'], 'border-top') !== false ? $section['style'] : ''; ?>">
+                        <h4
+                            style="<?php echo str_replace('border-top: 2px dashed rgba(0,0,0,0.1);', '', $section['style']); ?> font-size: 14px; margin-bottom: 10px; font-weight: 700;">
+                            <?php echo strtoupper($section['name']); ?>
+                        </h4>
 
-                <!-- VIP SECTION (Front 3 rows - Premium seats) -->
-                <div style="margin-bottom: 20px; width: 100%;">
-                    <h4 style="color: #b8860b; font-size: 14px; margin-bottom: 10px; font-weight: 700;">VIP SECTION</h4>
+                        <?php for ($r = 1; $r <= $section['rows']; $r++): ?>
+                            <div class="seat-row" data-row="<?php echo substr($section['prefix'], 0, 1) . $r; ?>">
+                                <?php
+                                $total_seats = $section['seats_per_row'];
+                                $aisle = isset($section['aisle_after']) ? $section['aisle_after'] : 0;
 
-                    <?php for ($r = 1; $r <= 3; $r++): ?>
-                        <div class="seat-row" data-row="V<?php echo $r; ?>">
-                            <?php
-                            // VIP rows have 10 seats each
-                            for ($s = 1; $s <= 10; $s++):
-                                $seatId = "VIP-$r-$s";
-                                ?>
-                                <div class="seat-vip">
-                                    <input type="checkbox" name="seats[]" value="<?php echo $seatId; ?>" data-price="10000"
-                                        id="<?php echo $seatId; ?>" class="seat-checkbox">
-                                    <label for="<?php echo $seatId; ?>" class="seat-label"
-                                        title="VIP Row <?php echo $r; ?> Seat <?php echo $s; ?>">
-                                        <?php echo $s; ?>
-                                    </label>
-                                </div>
-                            <?php endfor; ?>
-                        </div>
-                    <?php endfor; ?>
-                </div>
-
-                <!-- REGULAR SECTION (Middle 6 rows with center aisle) -->
-                <div style="margin-bottom: 25px; width: 100%;">
-                    <h4 style="color: #2c5282; font-size: 14px; margin-bottom: 10px; font-weight: 700;">REGULAR SECTION
-                    </h4>
-
-                    <?php for ($r = 1; $r <= 6; $r++): ?>
-                        <div class="seat-row" data-row="R<?php echo $r; ?>">
-                            <?php
-                            // Left side - 6 seats
-                            for ($s = 1; $s <= 6; $s++):
-                                $seatId = "REG-$r-$s";
-                                ?>
-                                <div class="seat-regular">
-                                    <input type="checkbox" name="seats[]" value="<?php echo $seatId; ?>" data-price="5000"
-                                        id="<?php echo $seatId; ?>" class="seat-checkbox">
-                                    <label for="<?php echo $seatId; ?>" class="seat-label"
-                                        title="Regular Row <?php echo $r; ?> Seat <?php echo $s; ?>">
-                                        <?php echo $s; ?>
-                                    </label>
-                                </div>
-                            <?php endfor; ?>
-
-                            <!-- Center Aisle -->
-                            <div style="width: 30px;"></div>
-
-                            <?php
-                            // Right side - 6 seats
-                            for ($s = 7; $s <= 12; $s++):
-                                $seatId = "REG-$r-$s";
-                                ?>
-                                <div class="seat-regular">
-                                    <input type="checkbox" name="seats[]" value="<?php echo $seatId; ?>" data-price="5000"
-                                        id="<?php echo $seatId; ?>" class="seat-checkbox">
-                                    <label for="<?php echo $seatId; ?>" class="seat-label"
-                                        title="Regular Row <?php echo $r; ?> Seat <?php echo $s; ?>">
-                                        <?php echo $s; ?>
-                                    </label>
-                                </div>
-                            <?php endfor; ?>
-                        </div>
-                    <?php endfor; ?>
-                </div>
-
-                <!-- BALCONY SECTION (Back 4 rows - Budget seats) -->
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed rgba(0,0,0,0.1); width: 100%;">
-                    <h4 style="color: #2d3748; font-size: 14px; margin-bottom: 10px; font-weight: 700;">BALCONY SECTION
-                    </h4>
-
-                    <?php for ($r = 1; $r <= 4; $r++): ?>
-                        <div class="seat-row" data-row="B<?php echo $r; ?>">
-                            <?php
-                            // Balcony rows have 14 seats each (wider section)
-                            for ($s = 1; $s <= 14; $s++):
-                                $seatId = "BAL-$r-$s";
-                                ?>
-                                <div class="seat-balcony">
-                                    <input type="checkbox" name="seats[]" value="<?php echo $seatId; ?>" data-price="3000"
-                                        id="<?php echo $seatId; ?>" class="seat-checkbox">
-                                    <label for="<?php echo $seatId; ?>" class="seat-label"
-                                        title="Balcony Row <?php echo $r; ?> Seat <?php echo $s; ?>">
-                                        <?php echo $s; ?>
-                                    </label>
-                                </div>
-                            <?php endfor; ?>
-                        </div>
-                    <?php endfor; ?>
-                </div>
-
+                                for ($s = 1; $s <= $total_seats; $s++):
+                                    $seatId = $section['prefix'] . "-$r-$s";
+                                    ?>
+                                    <div class="<?php echo $section['class']; ?>">
+                                        <input type="checkbox" name="seats[]" value="<?php echo $seatId; ?>"
+                                            data-price="<?php echo $section['price']; ?>" id="<?php echo $seatId; ?>"
+                                            class="seat-checkbox">
+                                        <label for="<?php echo $seatId; ?>" class="seat-label"
+                                            title="<?php echo $section['name']; ?> Row <?php echo $r; ?> Seat <?php echo $s; ?>">
+                                            <?php echo $s; ?>
+                                        </label>
+                                    </div>
+                                    <?php if ($aisle > 0 && $s == $aisle): ?>
+                                        <!-- Aisle -->
+                                        <div style="width: 30px;"></div>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                            </div>
+                        <?php endfor; ?>
+                    </div>
+                <?php endforeach; ?>
             </div>
 
             <input type="hidden" name="total_price" id="inputTotalPrice" value="0">
@@ -237,7 +257,7 @@ if (!$event) {
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-chair" style="color: #667eea; font-size: 20px;"></i>
                     <span style="font-size: 16px; color: #4a5568;">
-                        <span id="count" style="font-size: 24px; font-weight: 700; color: #667eea;">0</span> 
+                        <span id="count" style="font-size: 24px; font-weight: 700; color: #667eea;">0</span>
                         <span style="font-weight: 600;">seats selected</span>
                     </span>
                 </div>
