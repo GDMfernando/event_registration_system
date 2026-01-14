@@ -1,4 +1,13 @@
 <?php
+
+session_start();
+
+// 1. Security Check
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: ../admin_login.php");
+    exit();
+}
+
 include('../../db_connect.php');
 
 $filter_name  = isset($_GET['full_name']) ? $_GET['full_name'] : '';
@@ -42,16 +51,6 @@ if (isset($_GET['fetch_user_id'])) {
         echo json_encode(['success' => false]);
     }
     exit; // Stop execution so no HTML is sent with the JSON
-}
-
-// --- A. HELPER FUNCTIONS ---
-
-function get_all_users($conn) {
-    $sql = "SELECT user_id, username, full_name, email, phone, role, status, created_at 
-            FROM user 
-            ORDER BY created_at DESC";
-    $result = mysqli_query($conn, $sql);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
 // --- B. HANDLE ACTIONS (POST/GET) ---

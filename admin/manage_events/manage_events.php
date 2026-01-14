@@ -1,5 +1,13 @@
 <?php
 
+session_start();
+
+// 1. Security Check
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: ../admin_login.php");
+    exit();
+}
+
 include('../../db_connect.php');
 
 // --- A. HANDLE FILTER INPUTS ---
