@@ -236,6 +236,7 @@ body {
     font-weight: bold;
     color: #45a1e2;
     font-size: 16px;
+    margin-top: 10px;
 }
 
 .event-desc {
@@ -453,4 +454,59 @@ body {
 
 .dropdown-toggle.active .arrow {
     transform: rotate(180deg);
+}
+
+.pricing-container {
+    margin: 15px 0;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.price-sections {
+    display: flex;
+    background: #fdfdfd;
+    border: 1px solid #efefef;
+    border-radius: 8px;
+    overflow: hidden; /* Keeps the corners rounded */
+    margin-top: 12px;
+}
+
+.price-box {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Divider logic: only add a border if there is a box following it */
+.price-box:not(:last-child) {
+    border-right: 1px solid #efefef;
+}
+
+.price-box .label {
+    font-size: 0.7rem;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.price-box .amount {
+    font-size: 0.85rem;
+    color: #45a1e2;
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+.free-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #e6fffa;
+    color: #2c7a7b;
+    border: 1px solid #b2f5ea;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-top: 10px;
 }

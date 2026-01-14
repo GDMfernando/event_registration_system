@@ -162,16 +162,43 @@ $events_result = mysqli_query($conn, $sql);
                             <p class="event-date">
                                 Date: <?php echo htmlspecialchars($event['event_date']); ?>
                             </p>
-                            <p class="event-price">
-                                Price:
+                            <div class="pricing-container">
                                 <?php
-                                if ($event['ticket_price'] > 0) {
-                                    echo '$' . number_format($event['ticket_price'], 2);
-                                } else {
-                                    echo "Free";
-                                }
+                                // Check if at least one price is set
+                                $has_pricing = ($event['price_vip'] > 0 || $event['price_regular'] > 0 || $event['price_balcony'] > 0);
                                 ?>
-                            </p>
+
+                                <?php if ($has_pricing): ?>
+                                    <h4 class="event-price">Prices:</h4>
+                                    <div class="price-sections">
+
+                                        <?php if ($event['price_vip'] > 0): ?>
+                                            <div class="price-box">
+                                                <span class="label">VIP</span>
+                                                <span class="amount">Rs.<?php echo number_format($event['price_vip'], 2); ?></span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if ($event['price_regular'] > 0): ?>
+                                            <div class="price-box">
+                                                <span class="label">Regular</span>
+                                                <span class="amount">Rs.<?php echo number_format($event['price_regular'], 2); ?></span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if ($event['price_balcony'] > 0): ?>
+                                            <div class="price-box">
+                                                <span class="label">Balcony</span>
+                                                <span class="amount">Rs.<?php echo number_format($event['price_balcony'], 2); ?></span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                    </div>
+                                <?php else: ?>
+                                    <div class="free-badge">Free</div>
+                                <?php endif; ?>
+                            </div>
+
                             <p class="event-desc">
                                 <?php echo nl2br(htmlspecialchars(substr($event['description'], 0, 120))); ?>...
                             </p>
