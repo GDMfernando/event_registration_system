@@ -2,39 +2,48 @@
 
 include('../../db_connect.php');
 
+// --- A. HANDLE FILTER INPUTS ---
+$filter_title       = isset($_GET['title'])       ? $_GET['title']       : '';
+$filter_category_id = isset($_GET['category_id']) ? $_GET['category_id'] : '';
+$filter_venue_id    = isset($_GET['venue_id'])    ? $_GET['venue_id']    : '';
+$filter_date        = isset($_GET['event_date'])  ? $_GET['event_date']  : '';
+
+
 
 $upload_dir = '../../uploads/event_images/';
 if (!is_dir($upload_dir)) {
     mkdir($upload_dir, 0777, true);
 }
 
-function get_all_events($conn)
+function get_filtered_events($conn, $title, $cat_id, $ven_id, $date)
 {
     $sql = "SELECT 
-                e.event_id AS id, 
-                e.title, 
-                e.event_date, 
-                e.start_time, 
-                e.end_time,
-                e.category_id,
-                e.image_path,
-                v.venue_name, 
-                c.category_name,
-                e.available_seats,    
-                e.status,              
-                e.created_at,
+                e.event_id AS id, e.title, e.event_date, e.start_time, e.end_time,
+                e.category_id, e.venue_id, e.image_path, v.venue_name, 
+                c.category_name, e.available_seats, e.status, e.created_at,
                 e.price_vip, e.price_regular, e.price_balcony
             FROM events e
             JOIN event_venues v ON e.venue_id = v.venue_id 
             JOIN event_categories c ON e.category_id = c.category_id
-            ORDER BY e.event_date DESC";
-    $result = mysqli_query($conn, $sql);
+            WHERE 1=1"; // Base query
 
-    if ($result === false) {
-        die("MySQL Query Error in get_all_events: " . mysqli_error($conn) .
-            "<br>Query: " . htmlspecialchars($sql));
+if (!empty($title)) {
+        $safe_title = mysqli_real_escape_string($conn, $title);
+        $sql .= " AND e.title LIKE '%$safe_title%'";
     }
 
+    if (!empty($cat_id)) {
+        $sql .= " AND e.category_id = " . (int)$cat_id;
+    }
+    if (!empty($ven_id)) {
+        $sql .= " AND e.venue_id = " . (int)$ven_id;
+    }
+    if (!empty($date)) {
+        $sql .= " AND e.event_date = '" . mysqli_real_escape_string($conn, $date) . "'";
+    }
+
+    $sql .= " ORDER BY e.event_date DESC";
+    $result = mysqli_query($conn, $sql);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
@@ -357,7 +366,7 @@ function get_all_categories($conn)
 // ------------------------------------
 // C. FETCH EVENTS FOR DISPLAY
 // ------------------------------------
-$events = get_all_events($conn);
+$events = get_filtered_events($conn, $filter_title, $filter_category_id, $filter_venue_id, $filter_date);
 $venues = get_all_venues($conn);
 $categories = get_all_categories($conn);
 
@@ -424,7 +433,62 @@ mysqli_close($conn);
 <body>
     <?php include('../includes/navbar.php'); ?>
     <div class="container">
-        <h1>🗓️ Event Management</h1>
+        
+          <div class="header">
+           <h1>🗓️ Event Management</h1>
+            <a href="../dashboard/dashboard.php" class="btn-back">Back to Dashboard</a>
+        </div>
+
+        
+
+        <div class="filter-container">
+            <form method="GET" action="manage_events.php" class="filter-form">
+
+            <div class="filter-group">
+            <label for="title_filter">Event Title</label>
+            <input type="text" name="title" id="title_filter" 
+                   placeholder="Search by name..." 
+                   value="<?php echo htmlspecialchars($filter_title); ?>">
+        </div>
+
+                <div class="filter-group">
+                    <label for="category_filter">Category</label>
+                    <select name="category_id" id="category_filter">
+                        <option value="">-- All Types --</option>
+                        <?php foreach ($categories as $c): ?>
+                            <option value="<?php echo $c['category_id']; ?>"
+                                <?php echo ($filter_category_id == $c['category_id']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($c['category_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="venue_filter">Venue</label>
+                    <select name="venue_id" id="venue_filter">
+                        <option value="">-- All Venues --</option>
+                        <?php foreach ($venues as $v): ?>
+                            <option value="<?php echo $v['venue_id']; ?>"
+                                <?php echo ($filter_venue_id == $v['venue_id']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($v['venue_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="date_filter">Event Date</label>
+                    <input type="date" name="event_date" id="date_filter"
+                        value="<?php echo htmlspecialchars($filter_date); ?>">
+                </div>
+
+                <div class="filter-buttons">
+                    <button type="submit" class="btn-filter">Filter</button>
+                    <a href="manage_events.php" class="btn-clear">Clear</a>
+                </div>
+            </form>
+        </div>
 
         <button id="addNewEventBtn" class="add-event-btn">+ Add New Event</button>
         <button id="addNewCategoryBtn" class="add-event-btn">+ Add New Category</button>
