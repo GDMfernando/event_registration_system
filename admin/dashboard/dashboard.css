@@ -33,7 +33,7 @@ body {
 
 /* --- Welcome Section --- */
 .welcome-section {
-    background: linear-gradient(to right, #ffffff, #f1f5f9);
+    background: linear-gradient(to right, #ffffff, #deefff);
     padding: 30px;
     border-radius: 16px;
     border: 1px solid #e2e8f0;
