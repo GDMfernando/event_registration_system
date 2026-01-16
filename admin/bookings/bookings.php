@@ -102,7 +102,7 @@ mysqli_close($conn);
         <div class="filter-container">
             <form method="GET" action="bookings.php" class="filter-form">
                 <div class="filter-group">
-                    <label>Customer Name</label>
+                    <label>User Name</label>
                     <input type="text" name="user_name" placeholder="Search name..." value="<?= htmlspecialchars($filter_name) ?>">
                 </div>
 

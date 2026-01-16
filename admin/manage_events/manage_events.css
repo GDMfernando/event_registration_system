@@ -69,65 +69,143 @@ body {
 .add-event-btn:hover {
   background-color: #1e7e34;
 }
+
+/* --- GLOBAL MODAL OVERLAY --- */
 .modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4);
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; 
+    background-color: rgba(0, 0, 0, 0.5); 
+    backdrop-filter: blur(2px); 
 }
 
+/* --- THE MODAL BOX (Your exact positioning logic) --- */
 .modal-content {
-  background-color: #fefefe;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  max-width: 545px;
-  border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-height: 90vh;
-  overflow: auto;
+    background-color: #fefefe;
+    padding: 25px; /* Increased padding slightly for breathability */
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 545px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-height: 90vh;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
 }
+
+/* --- HEADER AND CLOSE BUTTON --- */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.form-group{
+  width: 100%
+}
+.form-row{
+  display: flex;
+  gap: 15px;
+}
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #19273a;
+}
+
 .close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
 }
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
+
+.close:hover {
+    color: #000;
 }
+
+/* --- FORM FIELDS (Your content, enhanced style) --- */
+.modal-content label {
+    display: block;
+    font-weight: bold;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 5px;
+}
+
 .modal-content input[type="text"],
+.modal-content input[type="email"],
+.modal-content input[type="password"],
 .modal-content input[type="date"],
+.modal-content input[type="time"],
+.modal-content input[type="number"],
+.modal-content select,
 .modal-content textarea {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px; /* Consistent bottom spacing */
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
-.modal-content button {
-  /* Use same btn style from style.css */
-  background-color: #004b85;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 10px;
+
+/* Focus Effect */
+.modal-content input:focus, 
+.modal-content select:focus, 
+.modal-content textarea:focus {
+    outline: none;
+    border-color: #004b85;
+    box-shadow: 0 0 0 3px rgba(0, 75, 133, 0.1);
+}
+
+/* --- SUBMIT BUTTON --- */
+.btn-update-full {
+    background-color: #004b85;
+    color: white;
+    padding: 14px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.btn-update-full:hover {
+    background-color: #003660;
+}
+
+/* --- DIVIDERS & TEXT --- */
+.modal-content hr {
+    margin: 20px 0;
+    border: 0;
+    border-top: 1px solid #eee;
+}
+
+.password-warning {
+    font-size: 12px; 
+    color: #d9534f;
+    margin-bottom: 5px;
 }
 
 .ticket_price{

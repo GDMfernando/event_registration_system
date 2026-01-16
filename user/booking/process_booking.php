@@ -57,7 +57,7 @@ $booking_date = date("Y-m-d H:i:s");
 $status = 'confirmed'; // Payment simulated as successful
 
 // Check if event exists in DB, if not and it's a sample event, insert it.
-$check_event_sql = "SELECT event_id FROM events WHERE event_id = $event_id";
+$check_event_sql = "SELECT event_id, available_seats FROM events WHERE event_id = $event_id";
 $check_result = mysqli_query($conn, $check_event_sql);
 
 if (mysqli_num_rows($check_result) == 0) {
@@ -81,7 +81,10 @@ if (mysqli_num_rows($check_result) == 0) {
             die("Error creating synced event record: " . mysqli_error($conn));
         }
     } else {
-        die("Error: Event ID $event_id does not exist in database and is not a recognized sample event.");
+        $event_row = mysqli_fetch_assoc($check_result);
+         if ($event_row['available_seats'] < $quantity) {
+        die("Error: Not enough seats available. Only " . $event_row['available_seats'] . " seats left.");
+    }
     }
 }
 
@@ -104,7 +107,8 @@ if ($stmt) {
 
     if (mysqli_stmt_execute($stmt)) {
         $booking_id = mysqli_insert_id($conn);
-
+$update_seats_sql = "UPDATE events SET available_seats = available_seats - $quantity WHERE event_id = $event_id";
+        mysqli_query($conn, $update_seats_sql);
         // Success! Redirect to a confirmation page.
         // We can pass booking_id to show details.
         header("Location: booking_confirmation.php?booking_id=$booking_id");

@@ -41,6 +41,7 @@ function fetchEventDetails(eventId, modal) {
                 document.getElementById('edit_price_regular').value = event.price_regular;
                 document.getElementById('edit_price_balcony').value = event.price_balcony;
                 document.getElementById('edit_status').value = event.status;
+                document.getElementById('edit_capacity').value = event.capacity;
               
                 const imagePreviewDiv = document.getElementById('current_image_preview');
                 imagePreviewDiv.innerHTML = ''; // Clear previous content
@@ -94,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
     : null;
 
   var editModal = document.getElementById("editEventModal");
-  var editClose = editModal ? editModal.querySelector(".edit-close") : null;
+var editClose = editModal ? editModal.querySelector(".close") : null;
   var editLinks = document.querySelectorAll(".action-links .edit");
 
   // Event Modal Handlers
@@ -136,26 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (eventId) {
 
-        const row = this.closest("tr");
-        const title = row.children[1].textContent;
-        const categoryName = row.children[2].textContent;
-        const date = row.children[3].textContent;
-        const price = row.children[6].textContent;
-        const status = row.children[8].textContent;
 
-
-        document.getElementById("edit_event_id").value = eventId;
-        document.getElementById("edit_title").value = title;
-        document.getElementById("edit_event_date").value = date;
-        document.getElementById("edit_status").value = status;
-
-
-        const editCategorySelect = document.getElementById("edit_category_id");
-        Array.from(editCategorySelect.options).forEach((option) => {
-          if (option.textContent.trim() === categoryName.trim()) {
-            option.selected = true;
-          }
-        });
 
         fetchEventDetails(eventId, editModal);
       }

@@ -1,9 +1,13 @@
 <div id="editEventModal" class="modal">
     <div class="modal-content">
-        <span class="close edit-close">&times;</span>
-        <h2>Edit Event</h2>
+         <div class="modal-header">
+                 <h2>Edit Event</h2>
+       <span class="close" onclick="closeEditModal()">&times;</span>
+   
+        </div>
         <form id="editEventForm" action="manage_events.php" method="POST" enctype="multipart/form-data">
-            <input type="hidden" id="edit_event_id" name="event_id" required>
+            <div class="modal-body-scroll">
+        <input type="hidden" id="edit_event_id" name="event_id" required>
 
             <label for="edit_title">Event Title</label>
             <input type="text" id="edit_title" name="title" required>
@@ -59,6 +63,12 @@
                 </div>
             </div>
 
+            <div>
+                            <label for="edit_capacity">Total Capacity (Total Seats)</label>
+            <input type="number" id="edit_capacity" name="capacity" min="1" required>
+            </div>
+
+
             <label for="edit_status">Status</label>
             <select id="edit_status" name="status">
                 <option value="Active">Active</option>
@@ -74,7 +84,8 @@
 
                 <div id="current_image_preview"></div>
             </div>
-            <button type="submit" name="update_event">Update Event</button>
+            <button type="submit" name="update_event" class="btn-update-full">Update Event</button>
+            </div>
         </form>
     </div>
 </div>

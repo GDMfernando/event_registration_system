@@ -1,7 +1,9 @@
 <div id="editUserModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeEditModal()">&times;</span>
-        <h2>Edit Administrator</h2>
+        <div class="modal-header">
+            <h2>Edit Administrator</h2>
+            <span class="close" onclick="closeEditModal()">&times;</span>
+        </div>
         
         <form id="editUserForm" action="manage_users.php" method="POST">
             <div class="modal-body-scroll">
@@ -19,9 +21,9 @@
                 <label>Username</label>
                 <input type="text" id="edit_username" name="username" required>
 
-                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-                <p style="font-size: 12px; color: #d9534f;">Leave blank to keep current password.</p>
+                <hr>
 
+                <p class="password-warning">Leave blank to keep current password.</p>
                 <label>New Password</label>
                 <input type="password" id="edit_password" name="new_password">
 
@@ -32,7 +34,7 @@
                 </select>
             </div>
 
-            <button type="submit" name="update_user" class="" style="width: 100%; margin-top: 15px;">
+            <button type="submit" name="update_user" class="btn-update-full">
                 Update Administrator
             </button>
         </form>
