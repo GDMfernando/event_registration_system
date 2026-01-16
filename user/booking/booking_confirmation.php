@@ -103,9 +103,9 @@ if (mysqli_num_rows($result) > 0) {
                         Events <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="eventsMenu">
-                        <a href="../../events.php?cat=Concerts">Concerts</a>
-                        <a href="../../events.php?cat=Musical Festival">Musical Festival</a>
-                        <a href="../../events.php?cat=Tech">Tech</a>
+                        <a href="../event.php?cat=Concerts">Concerts</a>
+                        <a href="../event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="../event.php?cat=Tech">Tech</a>
                     </div>
                 </div>
 
@@ -115,9 +115,9 @@ if (mysqli_num_rows($result) > 0) {
                         Sports <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="sportsMenu">
-                        <a href="../../events.php?cat=Rugby">Rugby</a>
-                        <a href="../../events.php?cat=Cricket">Cricket</a>
-                        <a href="../../events.php?cat=Football">Football</a>
+                        <a href="../event.php?cat=Rugby">Rugby</a>
+                        <a href="../event.php?cat=Cricket">Cricket</a>
+                        <a href="../event.php?cat=Football">Football</a>
                     </div>
                 </div>
 
@@ -127,7 +127,17 @@ if (mysqli_num_rows($result) > 0) {
                         Theatre <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="theatreMenu">
-                        <a href="../../events.php?cat=Drama">Drama</a>
+                        <a href="../event.php?cat=Drama">Drama</a>
+                    </div>
+                </div>
+
+                <!-- HELP DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="helpToggle">
+                        Help <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="helpMenu">
+                        <a href="../../help_buyer.php?cat=user">I am a ticket buyer</a>
                     </div>
                 </div>
 
@@ -194,7 +204,7 @@ if (mysqli_num_rows($result) > 0) {
                 <h3>Quick Links</h3>
                 <ul class="footer-links">
                     <li><a href="../../home.php">Home</a></li>
-                    <li><a href="../../events.php">Events</a></li>
+                    <li><a href="../../all_events.php">Events</a></li>
                     <li><a href="../../about.php">About Us</a></li>
                     <li><a href="../../contact.php">Contact</a></li>
                 </ul>
