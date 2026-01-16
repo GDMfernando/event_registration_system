@@ -107,10 +107,36 @@ if ($stmt) {
 
     if (mysqli_stmt_execute($stmt)) {
         $booking_id = mysqli_insert_id($conn);
-$update_seats_sql = "UPDATE events SET available_seats = available_seats - $quantity WHERE event_id = $event_id";
+
+        $update_seats_sql = "UPDATE events SET available_seats = available_seats - $quantity WHERE event_id = $event_id";
         mysqli_query($conn, $update_seats_sql);
+
+        // --- NEW: Payment Storage Logic ---
+        $transaction_id = "TXN-" . strtoupper(bin2hex(random_bytes(4))); // Generate a mock transaction ID
+        $payment_date = date("Y-m-d H:i:s");
+
+        // Ensure payments table exists
+        $create_payments_sql = "CREATE TABLE IF NOT EXISTS payments (
+            payment_id INT(11) AUTO_INCREMENT PRIMARY KEY,
+            booking_id INT(11),
+            amount DECIMAL(10,2),
+            transaction_id VARCHAR(100),
+            payment_date DATETIME,
+            FOREIGN KEY (booking_id) REFERENCES event_booking(booking_id)
+        )";
+        mysqli_query($conn, $create_payments_sql);
+
+        // Insert into payments
+        $payment_sql = "INSERT INTO payments (booking_id, amount, transaction_id, payment_date) 
+                        VALUES (?, ?, ?, ?)";
+        $p_stmt = mysqli_prepare($conn, $payment_sql);
+        if ($p_stmt) {
+            mysqli_stmt_bind_param($p_stmt, "idss", $booking_id, $total_price, $transaction_id, $payment_date);
+            mysqli_stmt_execute($p_stmt);
+            mysqli_stmt_close($p_stmt);
+        }
+
         // Success! Redirect to a confirmation page.
-        // We can pass booking_id to show details.
         header("Location: booking_confirmation.php?booking_id=$booking_id");
         exit();
     } else {

@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Include the database connection file
-include "../db_connect.php"; 
+include "../db_connect.php";
 
 $error = "";
 $success = "";
@@ -15,7 +15,7 @@ if (isset($_GET['token'])) {
     // Verify token in user table
     $sql = "SELECT * FROM user WHERE reset_token_hash = '$token_hash' AND reset_token_expires_at > NOW()";
     $result = mysqli_query($conn, $sql);
-    
+
     // Check for query failure before using mysqli_num_rows
     if ($result === false) {
         $error = "Database Error during initial token verification: " . mysqli_error($conn);
@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $error = "Form submission error: Missing token.";
     }
-    
+
     // Sanitize and escape input
     $password = mysqli_real_escape_string($conn, $_POST['password']);
     $confirm_password = mysqli_real_escape_string($conn, $_POST['confirm_password']);
@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // CRITICAL ERROR CHECK FOR QUERY FAILURE
     if ($result_verify === false) {
         $error = "Database Error during token verification: " . mysqli_error($conn);
-    } 
+    }
     // Continue with the original logic only if the query succeeded
     elseif (mysqli_num_rows($result_verify) == 0) {
         $error = "Invalid or expired token. Please restart the password reset process.";
@@ -64,11 +64,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // --- CORE UPDATE LOGIC ---
         // 1. Hash the new password
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        
+
         // 2. Prepare the UPDATE query
         // This query updates the password and CLEARS the reset tokens.
         $sql = "UPDATE user SET password_hash = '$hashed_password', reset_token_hash = NULL, reset_token_expires_at = NULL WHERE reset_token_hash = '$token_hash'";
-        
+
         // 3. Execute the query and check for success/failure
         if (mysqli_query($conn, $sql)) {
             // Check if any row was actually updated
@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Password - Event Registration System</title>
-    <link rel="stylesheet" href="admin_style.css"> 
+    <link rel="stylesheet" href="admin_style.css">
 </head>
 
 <body class="login-body">
@@ -116,12 +116,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <?php endif; ?>
 
-        <?php 
+        <?php
         // Condition to show the form: 
         $show_form = !empty($token) && (empty($error) || $error === "Passwords do not match.");
-        
-        if ($show_form): 
-        ?>
+
+        if ($show_form):
+            ?>
             <form action="reset_password.php" method="POST">
                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
                 <div class="form-group">

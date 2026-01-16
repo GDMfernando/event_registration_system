@@ -467,7 +467,8 @@ body {
     background: #fdfdfd;
     border: 1px solid #efefef;
     border-radius: 8px;
-    overflow: hidden; /* Keeps the corners rounded */
+    overflow: hidden;
+    /* Keeps the corners rounded */
     margin-top: 12px;
 }
 
@@ -509,4 +510,156 @@ body {
     font-size: 0.9rem;
     text-transform: uppercase;
     margin-top: 10px;
+}
+
+/* Help Page Topics */
+/* help_buyer.php topic-list links */
+.topic-list {
+    list-style: none;
+    padding: 0;
+}
+
+.topic-list li {
+    margin-bottom: 12px;
+}
+
+.topic-list a {
+    color: #45a1e2;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: color 0.3s, padding-left 0.3s;
+    display: inline-block;
+}
+
+.topic-list a:hover {
+    color: #ffd700;
+    padding-left: 5px;
+}
+
+/* Help Content Detail Styles */
+.help-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    line-height: 1.6;
+}
+
+.help-content h3 {
+    color: #004b85;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.help-content p {
+    color: #444;
+    margin-bottom: 20px;
+}
+
+.help-content ul {
+    margin-bottom: 20px;
+    padding-left: 20px;
+}
+
+.help-content li {
+    margin-bottom: 10px;
+    color: #444;
+}
+
+/* Help Footer & Request Link */
+.help-footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.help-footer h3 {
+    color: blue;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.help-footer p {
+    font-size: 16px;
+}
+
+.btn-request {
+    display: inline-block;
+    background: #d9534f;
+    color: #fff !important;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s;
+    border: none;
+}
+
+.btn-request:hover {
+    background: #c9302c;
+    color: #fff !important;
+}
+
+/* Sidebar Layout for Help Pages */
+.help-page-layout {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.help-sidebar {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    height: fit-content;
+}
+
+.help-sidebar h3 {
+    color: #004b85;
+    font-size: 18px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #004b85;
+    padding-bottom: 5px;
+}
+
+.sidebar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-list li {
+    margin-bottom: 10px;
+}
+
+.sidebar-list a {
+    color: #45a1e2;
+    text-decoration: none;
+    font-size: 15px;
+    transition: color 0.3s, padding-left 0.3s;
+    display: block;
+}
+
+.sidebar-list a:hover {
+    color: #ffd700;
+    padding-left: 5px;
+}
+
+.help-main-content {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .help-page-layout {
+        flex-direction: column;
+    }
+
+    .help-sidebar {
+        width: 100%;
+    }
 }

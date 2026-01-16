@@ -1,5 +1,6 @@
 <?php
 session_start();
+include "includes/admin_functions.php";
 include "../db_connect.php";
 
 $error = "";
@@ -13,31 +14,41 @@ if (mysqli_num_rows($check_col) == 0) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $email = mysqli_real_escape_string($conn, $_POST['email']);
+  $email = trim($_POST['email']);
 
-  // Check if user exists and is an admin
-  $sql = "SELECT * FROM user WHERE email = '$email' AND role = 'admin'";
-  $result = mysqli_query($conn, $sql);
+  // Validate Email logic
+  $email_res = validate_admin_email($email);
+  if ($email_res !== true) {
+    $error = $email_res;
+  }
 
-  if (mysqli_num_rows($result) > 0) {
-    $token = bin2hex(random_bytes(32)); // 64 characters
-    $token_hash = hash('sha256', $token);
-    // Use MySQL timestamp for consistency
-    // $expire = date("Y-m-d H:i:s", strtotime('+1 hour')); 
+  if (empty($error)) {
+    $email = mysqli_real_escape_string($conn, $email);
 
-    $update_sql = "UPDATE user SET reset_token_hash = '$token_hash', reset_token_expires_at = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = '$email'";
-    if (mysqli_query($conn, $update_sql)) {
-      // In a real application, send email here.
-      // For demo purposes, we'll show the link.
-      $resetLink = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/reset_password.php?token=" . $token;
-      // Redirect to reset_password.php directly
-      header("Location: reset_password.php?token=" . $token);
-      exit();
+    // Check if user exists and is an admin
+    $sql = "SELECT * FROM user WHERE email = '$email' AND role = 'admin'";
+    $result = mysqli_query($conn, $sql);
+
+    if (mysqli_num_rows($result) > 0) {
+      $token = bin2hex(random_bytes(32)); // 64 characters
+      $token_hash = hash('sha256', $token);
+      // Use MySQL timestamp for consistency
+      // $expire = date("Y-m-d H:i:s", strtotime('+1 hour')); 
+
+      $update_sql = "UPDATE user SET reset_token_hash = '$token_hash', reset_token_expires_at = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = '$email'";
+      if (mysqli_query($conn, $update_sql)) {
+        // In a real application, send email here.
+        // For demo purposes, we'll show the link.
+        $resetLink = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/reset_password.php?token=" . $token;
+        // Redirect to reset_password.php directly
+        header("Location: reset_password.php?token=" . $token);
+        exit();
+      } else {
+        $error = "Something went wrong. Please try again.";
+      }
     } else {
-      $error = "Something went wrong. Please try again.";
+      $error = "No admin account found with that email.";
     }
-  } else {
-    $error = "No admin account found with that email.";
   }
 }
 ?>
@@ -58,25 +69,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <?php if (!empty($error)): ?>
       <div class="error-msg"><?php echo $error; ?></div>
-    <?php endif; ?>
+      <?php endif; ?>
 
-    <?php if (!empty($success)): ?>
-      <div class="success-msg"
-        style="color: #155724; background-color: #d4edda; border-color: #c3e6cb; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: left; font-size: 14px; word-break: break-all;">
-        <?php echo $success; ?>
-      </div>
-    <?php endif; ?>
+      <?php if (!empty($success)): ?>
+        <div class="success-msg"
+          style="color: #155724; background-color: #d4edda; border-color: #c3e6cb; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: left; font-size: 14px; word-break: break-all;">
+          <?php echo $success; ?>
+        </div>
+      <?php endif; ?>
 
-    <form action="forgot_password.php" method="POST">
-      <div class="form-group">
-        <label for="email">Enter your Email</label>
-        <input type="email" id="email" name="email" required>
-      </div>
-      <button type="submit" class="btn-login">Reset Password</button>
-    </form>
+      <form action="forgot_password.php" method="POST">
+        <div class="form-group">
+          <label for="email">Enter your Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <button type="submit" class="btn-login">Reset Password</button>
+      </form>
 
-    <a href="admin_login.php" class="back-link">Back to Login</a>
-  </div>
+      <a href="admin_login.php" class="back-link">Back to Login</a>
+    </div>
 
 </body>
 
