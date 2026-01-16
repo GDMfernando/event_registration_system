@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   } else {
     // Prevent SQL injection
     $full_name = mysqli_real_escape_string($conn, $full_name);
-    
+
     // Check if user exists in user table
     $sql = "SELECT * FROM user WHERE full_name = '$full_name' AND role = 'user'";
     $result = mysqli_query($conn, $sql);
@@ -24,6 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['user_id'] = $row['user_id'];
         $_SESSION['user_username'] = $row['username'];
         $_SESSION['user_email'] = $row['email'];
+        $_SESSION['user_full_name'] = $row['full_name'];
         header("Location: ../home.php"); // Redirect to home.php
         exit();
       } else {
@@ -56,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <form action="user_login.php" method="POST">
       <div class="form-group">
-        <label for="full_name">Full Name</label>
+        <label for="full_name">User Name</label>
         <input type="text" id="full_name" name="full_name" required>
       </div>
       <div class="form-group">
