@@ -17,8 +17,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   if (empty($email) || empty($password)) {
     $error = "Please enter both email and password.";
   } else {
-    // Prevent SQL injection
-    $email = mysqli_real_escape_string($conn, $email);
+    // Validate Email logic
+    $email_valid = true;
+    if (substr_count($email, '@') !== 1) {
+       $email_valid = false;
+       $error = "Invalid email format.";
+    } else {
+       list($local, $domain) = explode('@', $email);
+       if (strlen($local) < 1 || strlen($local) > 64) { 
+           $email_valid = false; $error = "Local part must be 1-64 characters.";
+       } elseif ($local[0] === '.' || substr($local, -1) === '.') { 
+           $email_valid = false; $error = "Local part cannot start or end with a dot.";
+       } elseif (!preg_match('/^[A-Za-z0-9._%+-]+$/', $local)) { 
+           $email_valid = false; $error = "Local part contains invalid characters.";
+       } elseif (strpos($domain, '.') === false) { 
+           $email_valid = false; $error = "Domain part must contain at least one dot.";
+       } else {
+           foreach (explode('.', $domain) as $label) {
+               if (strlen($label) < 1 || strlen($label) > 63) { 
+                   $email_valid = false; $error = "Domain label must be 1-63 characters."; break; 
+               }
+               if ($label[0] === '-' || substr($label, -1) === '-') { 
+                   $email_valid = false; $error = "Domain label cannot start or end with a hyphen."; break; 
+               }
+               if (!preg_match('/^[A-Za-z0-9-]+$/', $label)) { 
+                   $email_valid = false; $error = "Domain label contains invalid characters."; break; 
+               }
+           }
+       }
+    }
+
+    if (empty($error)) {
+        // Prevent SQL injection
+        $email = mysqli_real_escape_string($conn, $email);
     $password = mysqli_real_escape_string($conn, $password);
 
     // Check if admin exists in user table
@@ -41,6 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $error = "Invalid email or password, or you do not have admin access.";
     }
   }
+}
 }
 ?>
 <!DOCTYPE html>
@@ -86,6 +118,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <a href="forgot_password.php" style="font-size: 14px; color: #666;">Forgot Password?</a>
       <br>
       <a href="admin_register.php" style="font-size: 14px; color: #666;">Register New Admin</a>
+    </div>
+    
     </div>
   </div>
 
