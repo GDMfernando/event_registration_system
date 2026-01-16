@@ -34,7 +34,10 @@ if (array_key_exists($event_id, $sample_events)) {
     $event = $sample_events[$event_id];
 } else {
     // Try fetching from DB
-    $sql = "SELECT * FROM events WHERE event_id = $event_id";
+    $sql = "SELECT e.*, v.venue_name 
+            FROM events e
+            LEFT JOIN event_venues v ON e.venue_id = v.venue_id
+            WHERE e.event_id = $event_id";
     $result = mysqli_query($conn, $sql);
     if ($result && mysqli_num_rows($result) > 0) {
         $event = mysqli_fetch_assoc($result);
@@ -73,9 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         Events <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="eventsMenu">
-                        <a href="../../events.php?cat=Concerts">Concerts</a>
-                        <a href="../../events.php?cat=Musical Festival">Musical Festival</a>
-                        <a href="../../events.php?cat=Tech">Tech</a>
+                        <a href="../event.php?cat=Concerts">Concerts</a>
+                        <a href="../event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="../event.php?cat=Tech">Tech</a>
                     </div>
                 </div>
 
@@ -85,9 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         Sports <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="sportsMenu">
-                        <a href="../../events.php?cat=Rugby">Rugby</a>
-                        <a href="../../events.php?cat=Cricket">Cricket</a>
-                        <a href="../../events.php?cat=Football">Football</a>
+                        <a href="../event.php?cat=Rugby">Rugby</a>
+                        <a href="../event.php?cat=Cricket">Cricket</a>
+                        <a href="../event.php?cat=Football">Football</a>
                     </div>
                 </div>
 
@@ -97,7 +100,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         Theatre <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="theatreMenu">
-                        <a href="../../events.php?cat=Drama">Drama</a>
+                        <a href="../event.php?cat=Drama">Drama</a>
+                    </div>
+                </div>
+
+                <!-- HELP DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="helpToggle">
+                        Help <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="helpMenu">
+                        <a href="../../help_buyer.php?cat=user">I am a ticket buyer</a>
                     </div>
                 </div>
 
@@ -105,8 +118,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
 
             <div class="nav-right">
-                <a href="../../user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="../../register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php if (isset($_SESSION['user_id'])):
+                    $user_name = isset($_SESSION['user_full_name']) ? $_SESSION['user_full_name'] : 'User';
+                    ?>
+                    <span class="welcome-text" style="color: white; margin-right: 15px; font-weight: 600;">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!</span>
+                    <a href="../../user/user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="../../user/user_login.php" class="btn-nav">Sign In</a>
+                    <a href="../../user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php endif; ?>
             </div>
         </nav>
     </header>
@@ -161,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <h3>Quick Links</h3>
                 <ul class="footer-links">
                     <li><a href="../../home.php">Home</a></li>
-                    <li><a href="../../events.php">Events</a></li>
+                    <li><a href="../../all_events.php">Events</a></li>
                     <li><a href="../../about.php">About Us</a></li>
                     <li><a href="../../contact.php">Contact</a></li>
                 </ul>
