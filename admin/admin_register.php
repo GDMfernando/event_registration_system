@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "../db_connect.php";
+include "includes/admin_functions.php";
 
 $error = "";
 $success = "";
@@ -18,32 +18,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   } elseif ($password !== $confirm_password) {
     $error = "Passwords do not match.";
   } else {
-    // Prevent SQL injection
-    // Generate username from email (part before @)
-    $email_parts = explode('@', $email);
-    $username = $email_parts[0] . rand(1000, 9999);
-    // Ensure username is unique by appending a random number if needed (simple version for now)
-    $username = mysqli_real_escape_string($conn, $username);
-    $full_name = mysqli_real_escape_string($conn, $full_name);
-    $email = mysqli_real_escape_string($conn, $email);
-    $phone = mysqli_real_escape_string($conn, $phone);
-    $password = mysqli_real_escape_string($conn, $password);
-
-    // Check if username or email already exists in user table
-    $check_sql = "SELECT * FROM user WHERE email = '$email'";
-    $check_result = mysqli_query($conn, $check_sql);
-
-    if (mysqli_num_rows($check_result) > 0) {
-      $error = "Email already exists.";
+    // Validate Phone logic
+    $phone_res = validate_admin_phone($phone);
+    if ($phone_res !== true) {
+      $error = $phone_res;
     } else {
-      // Insert new admin into user table with role='admin'
-      $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-      $sql = "INSERT INTO user (username, full_name, email, phone, password_hash, role) VALUES ('$username', '$full_name', '$email', '$phone', '$hashed_password', 'admin')";
+      // Validate Email logic
+      $email_res = validate_admin_email($email);
+      if ($email_res !== true) {
+        $error = $email_res;
+      }
+    }
 
-      if (mysqli_query($conn, $sql)) {
-        $success = "Registration successful! You can now <a href='admin_login.php'>login</a>.";
+    if (empty($error)) {
+      // Prevent SQL injection
+      // Generate username from email (part before @)
+      $email_parts = explode('@', $email);
+      $username = $email_parts[0] . rand(1000, 9999);
+      // Ensure username is unique by appending a random number if needed (simple version for now)
+      $username = mysqli_real_escape_string($conn, $username);
+      $full_name = mysqli_real_escape_string($conn, $full_name);
+      $email = mysqli_real_escape_string($conn, $email);
+      $phone = mysqli_real_escape_string($conn, $phone);
+      $password = mysqli_real_escape_string($conn, $password);
+
+      // Check if username or email already exists in user table
+      $check_sql = "SELECT * FROM user WHERE email = '$email'";
+      $check_result = mysqli_query($conn, $check_sql);
+
+      if (mysqli_num_rows($check_result) > 0) {
+        $error = "Email already exists.";
       } else {
-        $error = "Error: " . mysqli_error($conn);
+        // Insert new admin into user table with role='admin'
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $sql = "INSERT INTO user (username, full_name, email, phone, password_hash, role) VALUES ('$username', '$full_name', '$email', '$phone', '$hashed_password', 'admin')";
+
+        if (mysqli_query($conn, $sql)) {
+          $success = "Registration successful! You can now <a href='admin_login.php'>login</a>.";
+        } else {
+          $error = "Error: " . mysqli_error($conn);
+        }
       }
     }
   }
