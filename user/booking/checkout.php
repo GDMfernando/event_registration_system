@@ -43,7 +43,10 @@ $sample_events = [
 if (array_key_exists($event_id, $sample_events)) {
     $event = $sample_events[$event_id];
 } else {
-    $sql = "SELECT * FROM events WHERE event_id = $event_id";
+    $sql = "SELECT e.*, v.venue_name 
+            FROM events e
+            LEFT JOIN event_venues v ON e.venue_id = v.venue_id
+            WHERE e.event_id = $event_id";
     $result = mysqli_query($conn, $sql);
     if ($result && mysqli_num_rows($result) > 0) {
         $event = mysqli_fetch_assoc($result);
@@ -162,11 +165,64 @@ if (!$event) {
         <nav class="nav">
             <div class="nav-left">
                 <a href="../../home.php" class="nav-link">Home</a>
+
+                <!-- EVENTS DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="eventsToggle">
+                        Events <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="eventsMenu">
+                        <a href="../event.php?cat=Concerts">Concerts</a>
+                        <a href="../event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="../event.php?cat=Tech">Tech</a>
+                    </div>
+                </div>
+
+                <!-- SPORTS DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="sportsToggle">
+                        Sports <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="sportsMenu">
+                        <a href="../event.php?cat=Rugby">Rugby</a>
+                        <a href="../event.php?cat=Cricket">Cricket</a>
+                        <a href="../event.php?cat=Football">Football</a>
+                    </div>
+                </div>
+
+                <!-- THEATRE DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="theatreToggle">
+                        Theatre <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="theatreMenu">
+                        <a href="../event.php?cat=Drama">Drama</a>
+                    </div>
+                </div>
+
+                <!-- HELP DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="helpToggle">
+                        Help <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="helpMenu">
+                        <a href="../../help_buyer.php?cat=user">I am a ticket buyer</a>
+                    </div>
+                </div>
+
+                <a href="../../contact.php" class="nav-link">Contact Us</a>
             </div>
+
             <div class="nav-right">
-                <!-- Simple user indicator if logged in -->
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <span style="color: white; margin-right: 15px;">Welcome, <?php echo htmlspecialchars($name); ?></span>
+                <?php if (isset($_SESSION['user_id'])):
+                    $user_name = isset($_SESSION['user_full_name']) ? $_SESSION['user_full_name'] : 'User';
+                    ?>
+                    <span class="welcome-text" style="color: white; margin-right: 15px; font-weight: 600;">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!</span>
+                    <a href="../../user/user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="../../user/user_login.php" class="btn-nav">Sign In</a>
+                    <a href="../../user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
                 <?php endif; ?>
             </div>
         </nav>
@@ -267,10 +323,10 @@ if (!$event) {
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul class="footer-links">
-                    <li><a href="../home.php">Home</a></li>
-                    <li><a href="../events.php">Events</a></li>
-                    <li><a href="../about.php">About Us</a></li>
-                    <li><a href="../contact.php">Contact</a></li>
+                    <li><a href="../../home.php">Home</a></li>
+                    <li><a href="../../all_events.php">Events</a></li>
+                    <li><a href="../../about.php">About Us</a></li>
+                    <li><a href="../../contact.php">Contact</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -278,10 +334,10 @@ if (!$event) {
                 <p>Email: support@eventsystem.com</p>
                 <p>Phone: +1 (555) 123-4567</p>
                 <div class="social-links">
-                    <a href="#">Facebook</a>
-                    <a href="#">Twitter</a>
-                    <a href="#">Instagram</a>
-                    <a href="#">LinkedIn</a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
         </div>
@@ -290,23 +346,23 @@ if (!$event) {
         </div>
     </footer>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const expiryInput = document.querySelector('input[name="expiry"]');
             const form = document.querySelector('.payment-form');
 
             // Auto-format expiry date (MM/YY)
-            expiryInput.addEventListener('input', function(e) {
+            expiryInput.addEventListener('input', function (e) {
                 let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-                
+
                 if (value.length > 2) {
                     value = value.substring(0, 2) + '/' + value.substring(2, 4);
                 }
-                
+
                 e.target.value = value;
             });
 
             // Validate on form submission
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', function (e) {
                 const expiryValue = expiryInput.value;
                 const regex = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
 
@@ -333,6 +389,7 @@ if (!$event) {
             });
         });
     </script>
+    <script src="../../script.js"></script>
 </body>
 
 </html>
