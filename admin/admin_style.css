@@ -68,6 +68,8 @@ a:hover {
   outline: none;
 }
 
+
+
 .btn-login {
   width: 100%;
   padding: 12px;
@@ -212,4 +214,39 @@ a:hover {
   color: #333;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
+}
+
+/* Password Toggle Styles */
+.password-container {
+  position: relative;
+  width: 100%;
+  display: block;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 40px !important;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.toggle-password:hover {
+  color: #004b85;
+}
+
+.toggle-password svg {
+  width: 20px;
+  height: 20px;
 }
