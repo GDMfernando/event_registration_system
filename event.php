@@ -2,43 +2,51 @@
 session_start();
 include "db_connect.php";
 
-// Optional search filter
 $search_text = $_GET['q'] ?? '';
+$category_filter = $_GET['cat'] ?? '';
 
-// Fetch events from events table (with venue and category info if available)
-$sql = "
-SELECT 
-    e.event_id,
-    e.title,
-    e.description,
-    e.venue_id,
-    e.event_date,
-    e.start_time,
-    e.end_time,
-    e.capacity,
-    e.available_seats,
-    e.price_vip,
-    e.price_regular,
-    e.price_balcony,
-    e.image_path
-FROM events e
-";
+// 2. Build the query string
+// Using LEFT JOIN ensures you get the category name from the other table
+$sql = "SELECT e.*, c.category_name 
+        FROM events e
+        LEFT JOIN event_categories c ON e.category_id = c.category_id
+        WHERE 1=1";
 
-// Add search filter if user searched something
-if (!empty($search_text)) {
-    $sql .= " WHERE e.title LIKE ? OR c.name LIKE ? OR v.name LIKE ?";
-    $stmt = mysqli_prepare($conn, $sql);
-    $param = "%$search_text%";
-    mysqli_stmt_bind_param($stmt, "sss", $param, $param, $param);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-} else {
-    $result = mysqli_query($conn, $sql);
-    if (!$result) {
-        die("Query failed: " . mysqli_error($conn));
-    }
+$params = [];
+$types = "";
+
+// 3. Add Category Filter if 'cat' exists in URL
+if (!empty($category_filter)) {
+    $sql .= " AND c.category_name = ?";
+    $params[] = $category_filter;
+    $types .= "s";
 }
 
+// 4. Add Search Filter if 'q' exists in URL
+if (!empty($search_text)) {
+    $sql .= " AND (e.title LIKE ? OR e.description LIKE ?)";
+    $searchTerm = "%$search_text%";
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+    $types .= "ss";
+}
+
+// 5. Order by newest first
+$sql .= " ORDER BY e.event_date ASC";
+
+// 6. Execute Statement
+$stmt = mysqli_prepare($conn, $sql);
+
+if (!$stmt) {
+    die("Query Error: " . mysqli_error($conn));
+}
+
+if (!empty($params)) {
+    mysqli_stmt_bind_param($stmt, $types, ...$params);
+}
+
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 $events = mysqli_fetch_all($result, MYSQLI_ASSOC);
 ?>
 
@@ -64,9 +72,9 @@ $events = mysqli_fetch_all($result, MYSQLI_ASSOC);
                         Events <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="eventsMenu">
-                        <a href="user/event.php?cat=Concerts">Concerts</a>
-                        <a href="user/event.php?cat=Musical Festival">Musical Festival</a>
-                        <a href="user/event.php?cat=Tech">Tech</a>
+                        <a href="event.php?cat=Concerts">Concerts</a>
+                        <a href="event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="event.php?cat=Tech">Tech</a>
                     </div>
                 </div>
 
@@ -76,9 +84,9 @@ $events = mysqli_fetch_all($result, MYSQLI_ASSOC);
                         Sports <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="sportsMenu">
-                        <a href="user/event.php?cat=Rugby">Rugby</a>
-                        <a href="user/event.php?cat=Cricket">Cricket</a>
-                        <a href="user/event.php?cat=Football">Football</a>
+                        <a href="event.php?cat=Rugby">Rugby</a>
+                        <a href="event.php?cat=Cricket">Cricket</a>
+                        <a href="event.php?cat=Football">Football</a>
                     </div>
                 </div>
 
@@ -88,7 +96,7 @@ $events = mysqli_fetch_all($result, MYSQLI_ASSOC);
                         Theatre <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="theatreMenu">
-                        <a href="user/event.php?cat=Drama">Drama</a>
+                        <a href="event.php?cat=Drama">Drama</a>
                     </div>
                 </div>
 
@@ -126,7 +134,7 @@ $events = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
     <!-- EVENTS LIST -->
     <main class="container">
-        <h2>Upcoming Events</h2>
+        <h2>Events</h2>
         <div class="events-list">
             <?php if (empty($events)): ?>
                 <p>No events found. Please try different filters.</p>

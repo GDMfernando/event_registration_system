@@ -84,10 +84,10 @@ body {
     backdrop-filter: blur(2px); 
 }
 
-/* --- THE MODAL BOX (Your exact positioning logic) --- */
+
 .modal-content {
     background-color: #fefefe;
-    padding: 25px; /* Increased padding slightly for breathability */
+    padding: 25px; 
     border: 1px solid #888;
     width: 80%;
     max-width: 545px;
@@ -138,7 +138,7 @@ body {
     color: #000;
 }
 
-/* --- FORM FIELDS (Your content, enhanced style) --- */
+
 .modal-content label {
     display: block;
     font-weight: bold;
@@ -157,7 +157,7 @@ body {
 .modal-content textarea {
     width: 100%;
     padding: 12px;
-    margin-bottom: 20px; /* Consistent bottom spacing */
+    margin-bottom: 20px;
     display: inline-block;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -282,7 +282,7 @@ body {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
-    height: 38px; /* Standardize height with selects */
+    height: 38px;
     box-sizing: border-box;
 }
 

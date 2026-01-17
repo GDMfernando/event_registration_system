@@ -2,10 +2,7 @@
 session_start();
 include "db_connect.php";
 
-/*
-  This home page is ONLY for not-logged-in users.
-  If someone is logged in, redirect them to logged_home.php.
-*/
+
 if (isset($_SESSION['user_id'])) {
     header("Location: logged_home.php"); // Redirect logged-in users to their home page
     exit();
@@ -63,9 +60,9 @@ $events_result = mysqli_query($conn, $sql);
                         Events <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="eventsMenu">
-                        <a href="user/event.php?cat=Concerts">Concerts</a>
-                        <a href="user/event.php?cat=Musical Festival">Musical Festival</a>
-                        <a href="user/event.php?cat=Tech">Tech</a>
+                        <a href="event.php?cat=Concerts">Concerts</a>
+                        <a href="event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="event.php?cat=Tech">Tech</a>
                     </div>
                 </div>
 
@@ -75,9 +72,9 @@ $events_result = mysqli_query($conn, $sql);
                         Sports <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="sportsMenu">
-                        <a href="user/event.php?cat=Rugby">Rugby</a>
-                        <a href="user/event.php?cat=Cricket">Cricket</a>
-                        <a href="user/event.php?cat=Football">Football</a>
+                        <a href="event.php?cat=Rugby">Rugby</a>
+                        <a href="event.php">Cricket</a>
+                        <a href="event.php">Football</a>
                     </div>
                 </div>
 

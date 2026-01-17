@@ -65,9 +65,9 @@ if (isset($_SESSION['user_id'])) {
                         Events <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="eventsMenu">
-                        <a href="user/event.php?cat=Concerts">Concerts</a>
-                        <a href="user/event.php?cat=Musical Festival">Musical Festival</a>
-                        <a href="user/event.php?cat=Tech">Tech</a>
+                        <a href="event.php?cat=Concerts">Concerts</a>
+                        <a href="event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="event.php?cat=Tech">Tech</a>
                     </div>
                 </div>
 
@@ -77,9 +77,9 @@ if (isset($_SESSION['user_id'])) {
                         Sports <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="sportsMenu">
-                        <a href="user/event.php?cat=Rugby">Rugby</a>
-                        <a href="user/event.php?cat=Cricket">Cricket</a>
-                        <a href="user/event.php?cat=Football">Football</a>
+                        <a href="event.php?cat=Rugby">Rugby</a>
+                        <a href="event.php?cat=Cricket">Cricket</a>
+                        <a href="event.php?cat=Football">Football</a>
                     </div>
                 </div>
 
@@ -89,7 +89,7 @@ if (isset($_SESSION['user_id'])) {
                         Theatre <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="theatreMenu">
-                        <a href="user/event.php?cat=Drama">Drama</a>
+                        <a href="event.php?cat=Drama">Drama</a>
                     </div>
                 </div>
 
