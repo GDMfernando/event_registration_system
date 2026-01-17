@@ -13,58 +13,59 @@ include "db_connect.php";
 </head>
 
 <body>
+        <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="home.php" class="nav-link">Home</a>
+                <a href="home.php" class="nav-link active">Home</a>
 
+                <!-- EVENTS DROPDOWN -->
                 <div class="dropdown">
                     <a href="#" class="nav-link dropdown-toggle" id="eventsToggle">
                         Events <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="eventsMenu">
-                        <a href="events.php?cat=Concerts">Concerts</a>
-                        <a href="events.php?cat=Musical Festival">Musical Festival</a>
-                        <a href="events.php?cat=Tech">Tech</a>
+                        <a href="user/event.php?cat=Concerts">Concerts</a>
+                        <a href="user/event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="user/event.php?cat=Tech">Tech</a>
                     </div>
                 </div>
 
+                <!-- SPORTS DROPDOWN -->
                 <div class="dropdown">
                     <a href="#" class="nav-link dropdown-toggle" id="sportsToggle">
                         Sports <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="sportsMenu">
-                        <a href="events.php?cat=Rugby">Rugby</a>
-                        <a href="events.php?cat=Cricket">Cricket</a>
-                        <a href="events.php?cat=Football">Football</a>
+                        <a href="user/event.php?cat=Rugby">Rugby</a>
+                        <a href="user/event.php?cat=Cricket">Cricket</a>
+                        <a href="user/event.php?cat=Football">Football</a>
                     </div>
                 </div>
 
+                <!-- THEATRE DROPDOWN -->
                 <div class="dropdown">
                     <a href="#" class="nav-link dropdown-toggle" id="theatreToggle">
                         Theatre <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="theatreMenu">
-                        <a href="events.php?cat=Drama">Drama</a>
+                        <a href="user/event.php?cat=Drama">Drama</a>
                     </div>
                 </div>
 
-                <a href="about.php" class="nav-link">About</a>
-
-                <div class="dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" id="helpToggle">
-                        Help <i class="fas fa-caret-down arrow"></i>
+                <!-- HELP DROPDOWN -->
+       
+                    <a href="help_buyer.php" class="nav-link" >
+                        Help 
                     </a>
+              
 
-                    <div class="dropdown-menu" id="helpMenu">
-                        <a href="help_buyer.php?cat=user">I am a ticket buyer</a>
-                    </div>
-                </div>
+                <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="login.php" class="btn-nav">Sign In</a>
-                <a href="register.php" class="btn-nav btn-nav-outline">Register</a>
+                <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
             </div>
         </nav>
     </header>

@@ -102,7 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_event'])) {
     $price_vip       = mysqli_real_escape_string($conn, $_POST['price_vip']);
     $price_regular   = mysqli_real_escape_string($conn, $_POST['price_regular']);
     $price_balcony   = mysqli_real_escape_string($conn, $_POST['price_balcony']);
-    $capacity        = (int)$_POST['capacity']; 
+    $capacity        = (int)$_POST['capacity'];
     $available_seats = $capacity;
 
     // Venue Selection
@@ -179,7 +179,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_event'])) {
     $sql = "UPDATE events SET title=?, description=?, category_id=?, venue_id=?, event_date=?, start_time=?, end_time=?, price_vip=?, price_regular=?, price_balcony=?, capacity=?, available_seats=?, image_path=?, status=? WHERE event_id=?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "ssiisssdddiiiss", $title, $description, $category_id, $venue_id, $event_date, $start_time, $end_time, $price_vip, $price_regular, $price_balcony, $new_capacity, $new_available_seats, $new_image_path, $status, $event_id);
-    
+
     if (mysqli_stmt_execute($stmt)) {
         header("location: manage_events.php?status=updated");
         exit();
@@ -229,6 +229,7 @@ mysqli_close($conn);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -236,6 +237,7 @@ mysqli_close($conn);
     <link rel="stylesheet" href="manage_events.css">
     <link rel="stylesheet" href="../includes/navbar.css">
 </head>
+
 <body>
     <?php include('../includes/navbar.php'); ?>
     <div class="container">
@@ -305,7 +307,9 @@ mysqli_close($conn);
                             <td><?php echo htmlspecialchars($event['category_name']); ?></td>
                             <td><?php echo $event['event_date']; ?><br><small><?php echo $event['start_time'] . '-' . $event['end_time']; ?></small></td>
                             <td><?php echo htmlspecialchars($event['venue_name']); ?></td>
-                            <td>V: <?php echo number_format($event['price_vip'], 2); ?><br>R: <?php echo number_format($event['price_regular'], 2); ?></td>
+                            <td>V: <?php echo number_format($event['price_vip'], 2); ?><br>
+                                R: <?php echo number_format($event['price_regular'], 2); ?><br>
+                                B: <?php echo number_format($event['price_balcony'], 2); ?></td>
                             <td><?php echo $event['available_seats']; ?> / <?php echo $event['capacity']; ?></td>
                             <td><?php echo $event['status']; ?></td>
                             <td class="action-links">
@@ -315,7 +319,9 @@ mysqli_close($conn);
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="9">No events found.</td></tr>
+                    <tr>
+                        <td colspan="9">No events found.</td>
+                    </tr>
                 <?php endif; ?>
             </tbody>
         </table>
@@ -324,25 +330,26 @@ mysqli_close($conn);
     <?php include 'add_event_modal.php'; ?>
     <?php include 'edit_event_modal.php'; ?>
 
-<div id="addCategoryModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Add New Category</h2>
-            <span class="close">&times;</span>
-        </div>
-
-        <form action="manage_events.php" method="POST">
-            <div class="modal-body-scroll">
-                <div class="form-group">
-                    <label>Category Name</label>
-                    <input type="text" name="category_name" required placeholder="e.g. Concerts, Workshops">
-                </div>
-                
-                <button type="submit" name="add_category" class="btn-update-full">Save Category</button>
+    <div id="addCategoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Category</h2>
+                <span class="close">&times;</span>
             </div>
-        </form>
+
+            <form action="manage_events.php" method="POST">
+                <div class="modal-body-scroll">
+                    <div class="form-group">
+                        <label>Category Name</label>
+                        <input type="text" name="category_name" required placeholder="e.g. Concerts, Workshops">
+                    </div>
+
+                    <button type="submit" name="add_category" class="btn-update-full">Save Category</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
     <script src="manage_events.js"></script>
 </body>
+
 </html>

@@ -40,14 +40,13 @@ $requests = [['subject' => 'Canselation and refunding'], ['subject' => 'Renaming
 $filter_name      = $_GET['user_name'] ?? '';
 $filter_ticket_id = $_GET['ticket_id'] ?? '';
 $filter_date      = $_GET['event_date'] ?? '';
-$filter_request   = $_GET['request_subject'] ?? '';
+$filter_status    = $_GET['booking_status'] ?? '';
 
 $sql = "SELECT b.booking_id AS id, b.quantity, b.total_price, b.booking_date, b.status,
                u.full_name AS user_name, e.title AS event_title, b.ticket_id
         FROM event_booking b
         JOIN user u ON b.user_id = u.user_id
         JOIN events e ON b.event_id = e.event_id
-        LEFT JOIN support_requests sr ON u.email = sr.email
         WHERE 1=1";
 
 if (!empty($filter_name)) {
@@ -61,9 +60,12 @@ if (!empty($filter_ticket_id)) {
 if (!empty($filter_date)) {
     $sql .= " AND e.event_date = '" . mysqli_real_escape_string($conn, $filter_date) . "'";
 }
-if (!empty($filter_request)) {
-    $sql .= " AND sr.subject = '" . mysqli_real_escape_string($conn, $filter_request) . "'";
+
+if (!empty($filter_status)) {
+    $safe_status = mysqli_real_escape_string($conn, $filter_status);
+    $sql .= " AND b.status = '$safe_status'";
 }
+
 // ------------------------------------
 // B. FETCH BOOKINGS FOR DISPLAY
 // ------------------------------------
@@ -117,14 +119,11 @@ mysqli_close($conn);
                 </div>
 
                 <div class="filter-group">
-                    <label>Support Request</label>
-                    <select name="request_subject">
-                        <option value="">All Requests</option>
-                        <?php foreach ($requests as $r): ?>
-                            <option value="<?= htmlspecialchars($r['subject']) ?>" <?= ($filter_request == $r['subject']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($r['subject']) ?>
-                            </option>
-                        <?php endforeach; ?>
+                    <label>Booking Status</label>
+                    <select name="booking_status">
+                        <option value="">All Statuses</option>
+                        <option value="confirmed" <?= ($filter_status == 'confirmed') ? 'selected' : '' ?>>Confirmed</option>
+                        <option value="cancelled" <?= ($filter_status == 'cancelled') ? 'selected' : '' ?>>Cancelled</option>
                     </select>
                 </div>
  

@@ -123,26 +123,59 @@ if (isset($_SESSION['user_id'])) {
 
 <body>
 
-    <!-- HEADER / NAVIGATION -->
+        <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="<?php echo isset($_SESSION['user_id']) ? 'logged_home.php' : 'home.php'; ?>"
-                    class="nav-link">Home</a>
-                <a href="all_events.php" class="nav-link">Events</a>
-                <a href="about.php" class="nav-link">About Us</a>
+                <a href="home.php" class="nav-link active">Home</a>
+
+                <!-- EVENTS DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="eventsToggle">
+                        Events <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="eventsMenu">
+                        <a href="user/event.php?cat=Concerts">Concerts</a>
+                        <a href="user/event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="user/event.php?cat=Tech">Tech</a>
+                    </div>
+                </div>
+
+                <!-- SPORTS DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="sportsToggle">
+                        Sports <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="sportsMenu">
+                        <a href="user/event.php?cat=Rugby">Rugby</a>
+                        <a href="user/event.php?cat=Cricket">Cricket</a>
+                        <a href="user/event.php?cat=Football">Football</a>
+                    </div>
+                </div>
+
+                <!-- THEATRE DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="theatreToggle">
+                        Theatre <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="theatreMenu">
+                        <a href="user/event.php?cat=Drama">Drama</a>
+                    </div>
+                </div>
+
+                <!-- HELP DROPDOWN -->
+       
+                    <a href="help_buyer.php" class="nav-link" >
+                        Help 
+                    </a>
+              
+
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
+
             <div class="nav-right">
-                <?php if (!isset($_SESSION['user_id'])): ?>
-                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                    <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
-                <?php else: ?>
-                    <span class="welcome-text" style="color: white; margin-right: 15px; font-weight: 600;">Welcome,
-                        <?php echo htmlspecialchars($user_name); ?>!
-                    </span>
-                    <a href="user/user_logout.php" class="btn-nav">Logout</a>
-                <?php endif; ?>
+                <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
             </div>
         </nav>
     </header>

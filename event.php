@@ -1,15 +1,6 @@
 <?php
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "event_registration_and_ticketing";
-
-// Connect to database
-$conn = mysqli_connect($host, $username, $password, $database);
-
-if (!$conn) {
-    die("Database connection failed: " . mysqli_connect_error());
-}
+session_start();
+include "db_connect.php";
 
 // Optional search filter
 $search_text = $_GET['q'] ?? '';
@@ -61,26 +52,63 @@ $events = mysqli_fetch_all($result, MYSQLI_ASSOC);
 </head>
 <body>
     <!-- HEADER -->
+            <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
                 <a href="home.php" class="nav-link active">Home</a>
+
+                <!-- EVENTS DROPDOWN -->
                 <div class="dropdown">
-                    <a href="#" class="nav-link dropdown-toggle">Events <i class="fas fa-caret-down arrow"></i></a>
-                    <div class="dropdown-menu">
-                        <a href="home.php?q=Concerts">Concerts</a>
-                        <a href="home.php?q=Musical Festival">Musical Festival</a>
-                        <a href="home.php?q=Tech">Tech</a>
+                    <a href="#" class="nav-link dropdown-toggle" id="eventsToggle">
+                        Events <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="eventsMenu">
+                        <a href="user/event.php?cat=Concerts">Concerts</a>
+                        <a href="user/event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="user/event.php?cat=Tech">Tech</a>
                     </div>
                 </div>
+
+                <!-- SPORTS DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="sportsToggle">
+                        Sports <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="sportsMenu">
+                        <a href="user/event.php?cat=Rugby">Rugby</a>
+                        <a href="user/event.php?cat=Cricket">Cricket</a>
+                        <a href="user/event.php?cat=Football">Football</a>
+                    </div>
+                </div>
+
+                <!-- THEATRE DROPDOWN -->
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="theatreToggle">
+                        Theatre <i class="fas fa-caret-down arrow"></i>
+                    </a>
+                    <div class="dropdown-menu" id="theatreMenu">
+                        <a href="user/event.php?cat=Drama">Drama</a>
+                    </div>
+                </div>
+
+                <!-- HELP DROPDOWN -->
+       
+                    <a href="help_buyer.php" class="nav-link" >
+                        Help 
+                    </a>
+              
+
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
+
             <div class="nav-right">
                 <a href="user/user_login.php" class="btn-nav">Sign In</a>
                 <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
             </div>
         </nav>
     </header>
+
 
     <!-- HERO + SEARCH -->
     <section class="hero-search">
@@ -148,5 +176,44 @@ $events = mysqli_fetch_all($result, MYSQLI_ASSOC);
             <?php endif; ?>
         </div>
     </main>
+
+        <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About Us</h3>
+                <p>We are dedicated to bringing you the best events in town. From concerts to tech conferences, we
+                    handle it all with passion and precision.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="<?php echo isset($_SESSION['user_id']) ? 'logged_home.php' : 'home.php'; ?>">Home</a>
+                    </li>
+                    <li><a href="all_events.php">Events</a></li>
+                    <li><a href="about.php">About Us</a></li>
+                    <li><a href="contact.php">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact & Follow Us</h3>
+                <p>Email: support@eventsystem.com</p>
+                <p>Phone: +1 (555) 123-4567</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy;
+                <?php echo date('Y'); ?> Event Registration System. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>

@@ -54,11 +54,11 @@ $events_result = mysqli_query($conn, $sql);
 
 <body>
 
-    <!-- HEADER / NAVIGATION -->
+        <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="logged_home.php" class="nav-link active">Home</a>
+                <a href="home.php" class="nav-link active">Home</a>
 
                 <!-- EVENTS DROPDOWN -->
                 <div class="dropdown">
@@ -95,21 +95,18 @@ $events_result = mysqli_query($conn, $sql);
                 </div>
 
                 <!-- HELP DROPDOWN -->
-                <div class="dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" id="helpToggle">
-                        Help <i class="fas fa-caret-down arrow"></i>
+       
+                    <a href="help_buyer.php" class="nav-link" >
+                        Help 
                     </a>
-                    <div class="dropdown-menu" id="helpMenu">
-                        <a href="help_buyer.php?cat=user">I am a ticket buyer</a>
-                    </div>
-                </div>
+              
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <span class="welcome-text">Welcome, <?php echo htmlspecialchars($user_name); ?>!</span>
-                <a href="user/user_logout.php" class="btn-nav">Logout</a>
+                <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
             </div>
         </nav>
     </header>

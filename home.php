@@ -92,14 +92,11 @@ $events_result = mysqli_query($conn, $sql);
                 </div>
 
                 <!-- HELP DROPDOWN -->
-                <div class="dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" id="helpToggle">
-                        Help <i class="fas fa-caret-down arrow"></i>
+       
+                    <a href="help_buyer.php" class="nav-link" >
+                        Help 
                     </a>
-                    <div class="dropdown-menu" id="helpMenu">
-                        <a href="help_buyer.php?cat=user">I am a ticket buyer</a>
-                    </div>
-                </div>
+              
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>

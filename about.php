@@ -89,13 +89,11 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_full_name'])) {
 </head>
 
 <body>
-
-    <!-- HEADER / NAVIGATION -->
+        <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="<?php echo isset($_SESSION['user_id']) ? 'logged_home.php' : 'home.php'; ?>"
-                    class="nav-link">Home</a>
+                <a href="home.php" class="nav-link active">Home</a>
 
                 <!-- EVENTS DROPDOWN -->
                 <div class="dropdown">
@@ -103,9 +101,9 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_full_name'])) {
                         Events <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="eventsMenu">
-                        <a href="events.php?cat=Concerts">Concerts</a>
-                        <a href="events.php?cat=Musical Festival">Musical Festival</a>
-                        <a href="events.php?cat=Tech">Tech</a>
+                        <a href="user/event.php?cat=Concerts">Concerts</a>
+                        <a href="user/event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="user/event.php?cat=Tech">Tech</a>
                     </div>
                 </div>
 
@@ -115,9 +113,9 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_full_name'])) {
                         Sports <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="sportsMenu">
-                        <a href="events.php?cat=Rugby">Rugby</a>
-                        <a href="events.php?cat=Cricket">Cricket</a>
-                        <a href="events.php?cat=Football">Football</a>
+                        <a href="user/event.php?cat=Rugby">Rugby</a>
+                        <a href="user/event.php?cat=Cricket">Cricket</a>
+                        <a href="user/event.php?cat=Football">Football</a>
                     </div>
                 </div>
 
@@ -127,26 +125,27 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_full_name'])) {
                         Theatre <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="theatreMenu">
-                        <a href="events.php?cat=Drama">Drama</a>
+                        <a href="user/event.php?cat=Drama">Drama</a>
                     </div>
                 </div>
+
+                <!-- HELP DROPDOWN -->
+       
+                    <a href="help_buyer.php" class="nav-link" >
+                        Help 
+                    </a>
+              
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <?php if (!isset($_SESSION['user_id'])): ?>
-                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                    <a href="register.php" class="btn-nav btn-nav-outline">Register</a>
-                <?php else: ?>
-                    <span class="welcome-text">Welcome,
-                        <?php echo htmlspecialchars($user_name); ?>!
-                    </span>
-                    <a href="user/user_logout.php" class="btn-nav">Logout</a>
-                <?php endif; ?>
+                <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
             </div>
         </nav>
     </header>
+
 
     <div class="hero-banner">
         <h1>About Us</h1>

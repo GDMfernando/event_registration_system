@@ -10,14 +10,19 @@ if (!isset($_SESSION['admin_id'])) {
 
 include('../../db_connect.php');
 
+$requests = [['subject' => 'Canselation and refunding'], ['subject' => 'Renaming ticket'], ['subject' => 'Change event']];
+
 $filter_name  = isset($_GET['full_name']) ? $_GET['full_name'] : '';
 $filter_email = isset($_GET['email'])     ? $_GET['email']     : '';
 $filter_date  = isset($_GET['reg_date'])  ? $_GET['reg_date']  : '';
+$filter_request = $_GET['request_subject'] ?? '';
 
 
-function get_filtered_user($conn, $name, $email, $date) {
-    $sql = "SELECT user_id, full_name, email, phone, role, status, created_at 
-            FROM user 
+function get_filtered_user($conn, $name, $email, $date, $request_subject)
+{
+    $sql = "SELECT u.user_id, u.full_name, u.email, u.phone, u.role, u.status, u.created_at 
+            FROM user u
+            LEFT JOIN support_requests sr ON u.email = sr.email
             WHERE 1=1";
 
     if (!empty($name)) {
@@ -35,6 +40,11 @@ function get_filtered_user($conn, $name, $email, $date) {
         $sql .= " AND DATE(created_at) = '$safe_date'";
     }
 
+    // Filter by support request subject
+    if (!empty($request_subject)) {
+        $sql .= " AND sr.subject = '" . mysqli_real_escape_string($conn, $request_subject) . "'";
+    }
+
     $sql .= " ORDER BY created_at DESC";
     $result = mysqli_query($conn, $sql);
     if ($result === false) {
@@ -48,7 +58,7 @@ if (isset($_GET['fetch_user_id'])) {
     $id = (int)$_GET['fetch_user_id'];
     $sql = "SELECT user_id, full_name, email, phone, status FROM user WHERE user_id = $id";
     $result = mysqli_query($conn, $sql);
-    
+
     if ($user = mysqli_fetch_assoc($result)) {
         echo json_encode(array('success' => true, 'user' => $user));
     } else {
@@ -62,11 +72,11 @@ if (isset($_GET['fetch_user_id'])) {
 
 if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
     $id = (int)$_GET['delete_id'];
-    
+
     // Using Prepared Statement for Security
     $stmt = mysqli_prepare($conn, "DELETE FROM user WHERE user_id = ?");
     mysqli_stmt_bind_param($stmt, "i", $id);
-    
+
     if (mysqli_stmt_execute($stmt)) {
         header("Location: manage_users.php?msg=deleted");
         exit();
@@ -82,7 +92,7 @@ if (isset($_POST['update_user'])) {
     $status = mysqli_real_escape_string($conn, $_POST['status']);
 
     $query = "UPDATE user SET full_name='$full_name', email='$email', phone='$phone', username='$username', status='$status' WHERE user_id=$user_id";
-    
+
     if (mysqli_query($conn, $query)) {
         // If a new password was provided, hash and update it
         if (!empty($_POST['new_password'])) {
@@ -125,9 +135,13 @@ if (isset($_POST['send_reply'])) {
 }
 
 // --- C. FETCH AND SEPARATE DATA ---
-$all_users = get_filtered_user($conn, $filter_name, $filter_email, $filter_date);
-$admins = array_filter($all_users, function($u) { return $u['role'] === 'admin'; });
-$customers = array_filter($all_users, function($u) { return $u['role'] === 'user'; });
+$all_users = get_filtered_user($conn, $filter_name, $filter_email, $filter_date, $filter_request);
+$admins = array_filter($all_users, function ($u) {
+    return $u['role'] === 'admin';
+});
+$customers = array_filter($all_users, function ($u) {
+    return $u['role'] === 'user';
+});
 
 // Fetch Contact Us Messages
 $contact_sql = "SELECT * FROM contact_us ORDER BY contact_id DESC"; // Corrected to use 'contact_id'
@@ -137,7 +151,7 @@ if ($contact_result) {
     $contact_messages = mysqli_fetch_all($contact_result, MYSQLI_ASSOC);
 } else {
     // Fallback or error handling if table doesn't exist yet
-    $contact_messages = array(); 
+    $contact_messages = array();
 }
 
 
@@ -146,14 +160,15 @@ mysqli_close($conn);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - Admin Dashboard</title>
-    <link rel="stylesheet" href="../manage_events/manage_events.css"> 
+    <link rel="stylesheet" href="../manage_events/manage_events.css">
     <link rel="stylesheet" href="../includes/navbar.css">
 
-    
+
     <style>
         /* Tab Navigation Styling */
         .tab-container {
@@ -161,14 +176,16 @@ mysqli_close($conn);
             background: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+
         .tabs {
             display: flex;
             border-bottom: 2px solid #f0f0f0;
             margin-bottom: 20px;
             gap: 5px;
         }
+
         .tab-btn {
             padding: 12px 25px;
             border: none;
@@ -180,24 +197,36 @@ mysqli_close($conn);
             border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
         }
+
         .tab-btn.active {
             color: #007bff;
             border-bottom: 3px solid #007bff;
         }
+
         .tab-btn:hover {
             background: #f8f9fa;
         }
+
         .tab-content {
             display: none;
             animation: fadeIn 0.4s ease;
         }
+
         .tab-content.active {
             display: block;
         }
 
         /* Status & Role Badges */
-        .status-active { color: #28a745; font-weight: bold; }
-        .status-inactive { color: #dc3545; font-weight: bold; }
+        .status-active {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
         .badge {
             font-size: 11px;
             padding: 3px 8px;
@@ -205,53 +234,78 @@ mysqli_close($conn);
             text-transform: uppercase;
             margin-left: 10px;
         }
-        .badge-admin { background: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; }
-        
+
+        .badge-admin {
+            background: #e3f2fd;
+            color: #0d47a1;
+            border: 1px solid #bbdefb;
+        }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body>
     <?php include('../includes/navbar.php'); ?>
 
     <div class="container">
-     
-       <div class="header">
-           <h1>👥 User Management</h1>
+
+        <div class="header">
+            <h1>👥 User Management</h1>
             <a href="../dashboard/dashboard.php" class="btn-back">Back to Dashboard</a>
         </div>
 
         <div class="filter-container">
-    <form method="GET" action="manage_users.php" class="filter-form">
-        
-        <div class="filter-group">
-            <label for="name_filter">Name</label>
-            <input type="text" name="full_name" id="name_filter" 
-                   placeholder="Search name..." 
-                   value="<?php echo htmlspecialchars($filter_name); ?>">
-        </div>
+            <form method="GET" action="manage_users.php" class="filter-form">
 
-        <div class="filter-group">
-            <label for="email_filter">Email</label>
-            <input type="text" name="email" id="email_filter" 
-                   placeholder="Search email..." 
-                   value="<?php echo htmlspecialchars($filter_email); ?>">
-        </div>
+                <div class="filter-group">
+                    <label for="name_filter">Name</label>
+                    <input type="text" name="full_name" id="name_filter"
+                        placeholder="Search name..."
+                        value="<?php echo htmlspecialchars($filter_name); ?>">
+                </div>
 
-        <div class="filter-group">
-            <label for="date_filter">Reg. Date</label>
-            <input type="date" name="reg_date" id="date_filter" 
-                   value="<?php echo htmlspecialchars($filter_date); ?>">
-        </div>
+                <div class="filter-group">
+                    <label for="email_filter">Email</label>
+                    <input type="text" name="email" id="email_filter"
+                        placeholder="Search email..."
+                        value="<?php echo htmlspecialchars($filter_email); ?>">
+                </div>
 
-        <div class="filter-buttons">
-            <button type="submit" class="btn-filter">Filter Users</button>
-            <a href="manage_users.php" class="btn-clear">Reset</a>
+                <div class="filter-group">
+                    <label for="date_filter">Reg. Date</label>
+                    <input type="date" name="reg_date" id="date_filter"
+                        value="<?php echo htmlspecialchars($filter_date); ?>">
+                </div>
+                <div class="filter-group">
+                    <label for="request_filter">Support Request</label>
+                    <select name="request_subject" id="request_filter">
+                        <option value="">-- All Requests --</option>
+                        <?php foreach ($requests as $r): ?>
+                            <option value="<?= htmlspecialchars($r['subject']) ?>" <?= ($filter_request == $r['subject']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($r['subject']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="filter-buttons">
+                    <button type="submit" class="btn-filter">Filter Users</button>
+                    <a href="manage_users.php" class="btn-clear">Reset</a>
+                </div>
+
+            </form>
         </div>
-    </form>
-</div>
 
         <div class="tab-container">
             <div class="tabs">
@@ -280,28 +334,30 @@ mysqli_close($conn);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if(empty($customers)): ?>
-                            <tr><td colspan="6">No registered customers found.</td></tr>
+                        <?php if (empty($customers)): ?>
+                            <tr>
+                                <td colspan="6">No registered customers found.</td>
+                            </tr>
                         <?php else: ?>
                             <?php foreach ($customers as $user): ?>
-                            <tr>
-                            <td>#<?php echo $user['user_id']; ?></td>
-                            <td><strong><?php echo htmlspecialchars($user['full_name']); ?></strong></td>
-                            <td>
-                                <?php echo htmlspecialchars($user['email']); ?><br>
-                                <small><?php echo htmlspecialchars(isset($user['phone']) ? $user['phone'] : 'No Phone'); ?></small>
-                            </td>
-                            <td><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
-                            <td class="status-<?php echo $user['status']; ?>">
-                                <?php echo ucfirst($user['status']); ?>
-                            </td>
-                                <td class="action-links">
-                                    <a href="?toggle_status=<?php echo $user['user_id']; ?>&current=<?php echo $user['status']; ?>">Change Status</a>
-                                    <a href="?delete_id=<?php echo $user['user_id']; ?>" 
-                                       class="delete" 
-                                       onclick="return confirm('Are you sure you want to delete this customer?');">Delete</a>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td>#<?php echo $user['user_id']; ?></td>
+                                    <td><strong><?php echo htmlspecialchars($user['full_name']); ?></strong></td>
+                                    <td>
+                                        <?php echo htmlspecialchars($user['email']); ?><br>
+                                        <small><?php echo htmlspecialchars(isset($user['phone']) ? $user['phone'] : 'No Phone'); ?></small>
+                                    </td>
+                                    <td><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
+                                    <td class="status-<?php echo $user['status']; ?>">
+                                        <?php echo ucfirst($user['status']); ?>
+                                    </td>
+                                    <td class="action-links">
+                                        <a href="?toggle_status=<?php echo $user['user_id']; ?>&current=<?php echo $user['status']; ?>">Change Status</a>
+                                        <a href="?delete_id=<?php echo $user['user_id']; ?>"
+                                            class="delete"
+                                            onclick="return confirm('Are you sure you want to delete this customer?');">Delete</a>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
@@ -322,24 +378,24 @@ mysqli_close($conn);
                     </thead>
                     <tbody>
                         <?php foreach ($admins as $user): ?>
-                        <tr>
-                            <td>#<?php echo $user['user_id']; ?></td>
-                            <td>
-                                <strong><?php echo htmlspecialchars($user['full_name']); ?></strong>
-                                <span class="badge badge-admin">Staff</span>
-                            </td>
-                            <td><?php echo htmlspecialchars($user['full_name']); ?></td>
-                            <td><?php echo htmlspecialchars($user['email']); ?></td>
-                            <td class="status-<?php echo $user['status']; ?>">
-                                <?php echo ucfirst($user['status']); ?>
-                            </td>
-                            <td class="action-links">
-                                <a href="?toggle_status=<?php echo $user['user_id']; ?>&current=<?php echo $user['status']; ?>">Toggle Access</a>
-                                <a href="javascript:void(0);" onclick="editUser(<?php echo $user['user_id']; ?>)" class="edit">
-    Edit
-</a>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td>#<?php echo $user['user_id']; ?></td>
+                                <td>
+                                    <strong><?php echo htmlspecialchars($user['full_name']); ?></strong>
+                                    <span class="badge badge-admin">Staff</span>
+                                </td>
+                                <td><?php echo htmlspecialchars($user['full_name']); ?></td>
+                                <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                <td class="status-<?php echo $user['status']; ?>">
+                                    <?php echo ucfirst($user['status']); ?>
+                                </td>
+                                <td class="action-links">
+                                    <a href="?toggle_status=<?php echo $user['user_id']; ?>&current=<?php echo $user['status']; ?>">Toggle Access</a>
+                                    <a href="javascript:void(0);" onclick="editUser(<?php echo $user['user_id']; ?>)" class="edit">
+                                        Edit
+                                    </a>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -357,23 +413,25 @@ mysqli_close($conn);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if(empty($contact_messages)): ?>
-                            <tr><td colspan="5">No customer questions found.</td></tr>
+                        <?php if (empty($contact_messages)): ?>
+                            <tr>
+                                <td colspan="5">No customer questions found.</td>
+                            </tr>
                         <?php else: ?>
                             <?php foreach ($contact_messages as $msg): ?>
-                            <tr>
-                                <td><strong><?php echo htmlspecialchars($msg['name']); ?></strong></td>
-                                <td><?php echo htmlspecialchars($msg['email']); ?></td>
-                                <td><?php echo htmlspecialchars($msg['subject']); ?></td>
-                                <td><?php echo htmlspecialchars($msg['message']); ?></td>
-                                <td>
-                                    <button onclick="openReplyModal('<?php echo htmlspecialchars($msg['email']); ?>', '<?php echo htmlspecialchars(addslashes($msg['subject'])); ?>')" 
-                                       class="btn-nav" 
-                                       style="padding: 5px 10px; font-size: 12px; border:none; cursor:pointer;">
-                                       Reply
-                                    </button>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td><strong><?php echo htmlspecialchars($msg['name']); ?></strong></td>
+                                    <td><?php echo htmlspecialchars($msg['email']); ?></td>
+                                    <td><?php echo htmlspecialchars($msg['subject']); ?></td>
+                                    <td><?php echo htmlspecialchars($msg['message']); ?></td>
+                                    <td>
+                                        <button onclick="openReplyModal('<?php echo htmlspecialchars($msg['email']); ?>', '<?php echo htmlspecialchars(addslashes($msg['subject'])); ?>')"
+                                            class="btn-nav"
+                                            style="padding: 5px 10px; font-size: 12px; border:none; cursor:pointer;">
+                                            Reply
+                                        </button>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
@@ -440,4 +498,5 @@ mysqli_close($conn);
     </script>
     <script src="manage_users.js"></script>
 </body>
+
 </html>

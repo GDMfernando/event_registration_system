@@ -1,6 +1,7 @@
 <?php
 session_start();
 include "includes/admin_functions.php";
+include "../db_connect.php";
 
 $error = "";
 $success = "";
