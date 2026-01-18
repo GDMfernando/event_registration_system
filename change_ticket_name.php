@@ -1,17 +1,33 @@
 <?php
 session_start();
 include "db_connect.php";
+
+// Pre-fill user name if logged in
+$user_name = '';
+if (isset($_SESSION['user_id'])) {
+    if (isset($_SESSION['user_full_name'])) {
+        $user_name = $_SESSION['user_full_name'];
+    } else {
+        $uid = $_SESSION['user_id'];
+        $q = mysqli_query($conn, "SELECT full_name FROM user WHERE user_id = $uid");
+        if ($q && $row = mysqli_fetch_assoc($q)) {
+            $user_name = $row['full_name'];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Help - Changing A Ticket Name</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body>
-       <!-- HEADER / NAVIGATION -->
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
@@ -52,18 +68,25 @@ include "db_connect.php";
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
+
+                <a href="help_buyer.php" class="nav-link">
+                    Help
+                </a>
+
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="welcome-text">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!
+                    </span>
+                    <a href="user/user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                    <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php endif; ?>
             </div>
         </nav>
     </header>
@@ -83,13 +106,23 @@ include "db_connect.php";
             <div class="help-main-content">
                 <h2>Changing A Ticket Name</h2>
                 <div class="help-content">
-                    <h3>I bought my ticket as a gift but I'm not attending, will the person using the ticket get in?</h3>
-                    <p>This is event dependent. Some of our event partners allow tickets to be used by unnamed guests and usually just require the unnamed ticketholder to provide a copy of the original ticketholder's ID upon entry to validate. Please check the event terms & conditions located at the bottom of the event store page for further details.</p>
-                    <h3>I bought tickets for me and my friends in a single order but they all have my name on, will my friends still get in?</h3>
-                    <p>Yes, so long as your group all enter together, or posses the primary ticket holder's ID if you're entering at different times.</p>
+                    <h3>I bought my ticket as a gift but I'm not attending, will the person using the ticket get in?
+                    </h3>
+                    <p>This is event dependent. Some of our event partners allow tickets to be used by unnamed guests
+                        and usually just require the unnamed ticketholder to provide a copy of the original
+                        ticketholder's ID upon entry to validate. Please check the event terms & conditions located at
+                        the bottom of the event store page for further details.</p>
+                    <h3>I bought tickets for me and my friends in a single order but they all have my name on, will my
+                        friends still get in?</h3>
+                    <p>Yes, so long as your group all enter together, or posses the primary ticket holder's ID if you're
+                        entering at different times.</p>
                     <h3>Renaming a ticket within a multi ticket order</h3>
-                    <p>If you possess an order that includes multiple tickets you will see that each ticket displays the same name, who we call the primary ticket holder. This is the standard display for multi-ticket orders.</p>
-                    <p>We cannot change individual ticket names within mutli-ticket orders. In these instances, name changes effect the primary ticket holder name, so all tickets in this type of order are changed to display a new primary ticket holder.</p>
+                    <p>If you possess an order that includes multiple tickets you will see that each ticket displays the
+                        same name, who we call the primary ticket holder. This is the standard display for multi-ticket
+                        orders.</p>
+                    <p>We cannot change individual ticket names within mutli-ticket orders. In these instances, name
+                        changes effect the primary ticket holder name, so all tickets in this type of order are changed
+                        to display a new primary ticket holder.</p>
                 </div>
                 <div class="help-footer">
                     <h3>Have more questions?</h3>
@@ -134,4 +167,5 @@ include "db_connect.php";
 
     <script src="script.js"></script>
 </body>
+
 </html>

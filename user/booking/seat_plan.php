@@ -5,7 +5,7 @@ include "../../db_connect.php";
 $event_id = isset($_GET['event_id']) ? intval($_GET['event_id']) : 0;
 $event = null;
 
-// Sample events data (duplicated for consistency)
+// Sample events data 
 $sample_events = [
     9991 => [
         'event_id' => 9991,
@@ -123,6 +123,19 @@ $seat_layouts = [
     ]
 ];
 
+// Pre-fill user name if logged in
+$user_name = '';
+if (isset($_SESSION['user_id'])) {
+    if (isset($_SESSION['user_full_name'])) {
+        $user_name = $_SESSION['user_full_name'];
+    } else {
+        $uid = $_SESSION['user_id'];
+        $q = mysqli_query($conn, "SELECT full_name FROM user WHERE user_id = $uid");
+        if ($q && $row = mysqli_fetch_assoc($q)) {
+            $user_name = $row['full_name'];
+        }
+    }
+}
 // Select layout based on venue
 $venue_name = $event['venue_name'];
 $current_layout = isset($seat_layouts[$venue_name]) ? $seat_layouts[$venue_name] : $seat_layouts['City Park Arena'];
@@ -140,11 +153,11 @@ $current_layout = isset($seat_layouts[$venue_name]) ? $seat_layouts[$venue_name]
 
 <body>
     <!-- HEADER / NAVIGATION -->
-       <!-- HEADER / NAVIGATION -->
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="home.php" class="nav-link active">Home</a>
+                <a href="../../home.php" class="nav-link active">Home</a>
 
                 <!-- EVENTS DROPDOWN -->
                 <div class="dropdown">
@@ -152,9 +165,9 @@ $current_layout = isset($seat_layouts[$venue_name]) ? $seat_layouts[$venue_name]
                         Events <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="eventsMenu">
-                        <a href="event.php?cat=Concerts">Concerts</a>
-                        <a href="event.php?cat=Musical Festival">Musical Festival</a>
-                        <a href="event.php?cat=Tech">Tech</a>
+                        <a href="../../event.php?cat=Concerts">Concerts</a>
+                        <a href="../../event.php?cat=Musical Festival">Musical Festival</a>
+                        <a href="../../event.php?cat=Tech">Tech</a>
                     </div>
                 </div>
 
@@ -164,9 +177,9 @@ $current_layout = isset($seat_layouts[$venue_name]) ? $seat_layouts[$venue_name]
                         Sports <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="sportsMenu">
-                        <a href="event.php?cat=Rugby">Rugby</a>
-                        <a href="event.php?cat=Cricket">Cricket</a>
-                        <a href="event.php?cat=Football">Football</a>
+                        <a href="../../event.php?cat=Rugby">Rugby</a>
+                        <a href="../../event.php?cat=Cricket">Cricket</a>
+                        <a href="../../event.php?cat=Football">Football</a>
                     </div>
                 </div>
 
@@ -176,23 +189,30 @@ $current_layout = isset($seat_layouts[$venue_name]) ? $seat_layouts[$venue_name]
                         Theatre <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="theatreMenu">
-                        <a href="event.php?cat=Drama">Drama</a>
+                        <a href="../../event.php?cat=Drama">Drama</a>
                     </div>
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
 
-                <a href="contact.php" class="nav-link">Contact Us</a>
+                <a href="../../help_buyer.php" class="nav-link">
+                    Help
+                </a>
+
+
+                <a href="../../contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="welcome-text">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!
+                    </span>
+                    <a href="../user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="../user_login.php" class="btn-nav">Sign In</a>
+                    <a href="../user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php endif; ?>
             </div>
         </nav>
     </header>

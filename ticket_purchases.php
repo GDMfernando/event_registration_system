@@ -1,6 +1,20 @@
 <?php
 session_start();
 include "db_connect.php";
+
+// Pre-fill user name if logged in
+$user_name = '';
+if (isset($_SESSION['user_id'])) {
+    if (isset($_SESSION['user_full_name'])) {
+        $user_name = $_SESSION['user_full_name'];
+    } else {
+        $uid = $_SESSION['user_id'];
+        $q = mysqli_query($conn, "SELECT full_name FROM user WHERE user_id = $uid");
+        if ($q && $row = mysqli_fetch_assoc($q)) {
+            $user_name = $row['full_name'];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -13,7 +27,7 @@ include "db_connect.php";
 </head>
 
 <body>
-        <!-- HEADER / NAVIGATION -->
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
@@ -54,18 +68,25 @@ include "db_connect.php";
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
+
+                <a href="help_buyer.php" class="nav-link">
+                    Help
+                </a>
+
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="welcome-text">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!
+                    </span>
+                    <a href="user/user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                    <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php endif; ?>
             </div>
         </nav>
     </header>
@@ -91,25 +112,25 @@ include "db_connect.php";
                     <ol style="margin-bottom: 20px; margin-left: 20px;">
                         <li><strong>Browse Events:</strong> Go to the <a href="home.php">Home</a> page to see all
                             upcoming events.</li>
-                        <img src="help_images/browse_events_demo.png" alt="Browse Events Demo"
+                        <img src="help_images/help_images/browse_events_demo.png" alt="Browse Events Demo"
                             style="max-width: 100%; border-radius: 8px; margin: 10px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         <li><strong>Select an Event:</strong> Click on "View Details" to learn more about the event or
                             "Buy Tickets" to go directly to the seat selection.</li>
                         <li><strong>Choose Your Seats:</strong> On the seat plan page, select your preferred seats by
                             clicking on them.</li>
-                        <img src="help_images/seat_selection_demo.png" alt="Seat Selection Demo"
+                        <img src="help_images/help_images/seat_selection_demo.png" alt="Seat Selection Demo"
                             style="max-width: 100%; border-radius: 8px; margin: 10px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         <li><strong>Confirm Selection:</strong> Once you've selected your seats, click the "Confirm
                             Selection" button.</li>
-                        <img src="help_images/booking_confirmation_demo.png" alt="Booking Confirmation Demo"
+                        <img src="help_images/help_images/booking_confirmation_demo.png" alt="Booking Confirmation Demo"
                             style="max-width: 100%; border-radius: 8px; margin: 10px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         <li><strong>Checkout:</strong> Review your order on the checkout page and proceed to payment.
                         </li>
-                        <img src="help_images/checkout_demo.png" alt="Checkout Demo"
+                        <img src="help_images/help_images/checkout_demo.png" alt="Checkout Demo"
                             style="max-width: 100%; border-radius: 8px; margin: 10px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         <li><strong>Receive Confirmation:</strong> After successful payment, you'll receive an email
                             confirmation and can view your ticket in your account.</li>
-                        <img src="help_images/payment_success_new.png" alt="Payment Success Demo"
+                        <img src="help_images/help_images/payment_success_new.png" alt="Payment Success Demo"
                             style="max-width: 100%; border-radius: 8px; margin: 10px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                     </ol>
 

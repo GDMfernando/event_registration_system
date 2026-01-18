@@ -12,6 +12,7 @@ if (isset($_SESSION['user_id'])) {
 ?>
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Tech Innovators Summit - Event Details</title>
@@ -24,8 +25,9 @@ if (isset($_SESSION['user_id'])) {
             background: #fff;
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
+
         .event-header-img {
             width: 100%;
             height: 450px;
@@ -33,12 +35,14 @@ if (isset($_SESSION['user_id'])) {
             border-radius: 8px;
             margin-bottom: 25px;
         }
+
         .event-title {
             font-size: 32px;
             font-weight: 700;
             color: #1a202c;
             margin-bottom: 10px;
         }
+
         .event-info-meta {
             font-size: 18px;
             color: #4a5568;
@@ -47,6 +51,7 @@ if (isset($_SESSION['user_id'])) {
             align-items: center;
             gap: 10px;
         }
+
         .event-date-badge {
             display: inline-block;
             background: #edf2f7;
@@ -55,6 +60,7 @@ if (isset($_SESSION['user_id'])) {
             font-weight: 600;
             margin-bottom: 30px;
         }
+
         .payment-methods-section {
             background: #f8fafc;
             padding: 20px;
@@ -62,6 +68,7 @@ if (isset($_SESSION['user_id'])) {
             margin-bottom: 30px;
             border-left: 4px solid #004b85;
         }
+
         .payment-icons {
             display: flex;
             gap: 15px;
@@ -69,25 +76,30 @@ if (isset($_SESSION['user_id'])) {
             margin-top: 10px;
             color: #2d3748;
         }
+
         .policy-section {
             margin-top: 40px;
             border-top: 1px solid #e2e8f0;
             padding-top: 30px;
         }
+
         .policy-title {
             font-size: 22px;
             font-weight: 700;
             margin-bottom: 15px;
             color: #2d3748;
         }
+
         .policy-content {
             line-height: 1.7;
             color: #4a5568;
         }
+
         .policy-content ul {
             padding-left: 20px;
             margin-bottom: 15px;
         }
+
         .buy-tickets-btn {
             display: block;
             width: 100%;
@@ -102,14 +114,16 @@ if (isset($_SESSION['user_id'])) {
             margin-top: 30px;
             transition: background 0.3s;
         }
+
         .buy-tickets-btn:hover {
             background: #00335d;
         }
     </style>
 </head>
+
 <body>
 
-        <!-- HEADER / NAVIGATION -->
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
@@ -150,33 +164,41 @@ if (isset($_SESSION['user_id'])) {
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
+
+                <a href="help_buyer.php" class="nav-link">
+                    Help
+                </a>
+
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="welcome-text">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!
+                    </span>
+                    <a href="user/user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                    <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php endif; ?>
             </div>
         </nav>
     </header>
 
     <main class="container">
         <div class="details-container">
-            <img src="uploads/event_images/event_img_695d514da6e3a4.16356886.jpg" class="event-header-img" alt="Tech Innovators Summit">
-            
+            <img src="uploads/event_images/event_img_695d514da6e3a4.16356886.jpg" class="event-header-img"
+                alt="Tech Innovators Summit">
+
             <h1 class="event-title">Tech Innovators Summit</h1>
             <div class="event-info-meta">
-                <span>Tech</span> | 
-                <span>Sirimavo Bandaranaike Memorial Exhibition Centre</span> | 
+                <span>Tech</span> |
+                <span>Sirimavo Bandaranaike Memorial Exhibition Centre</span> |
                 <span>Convention center</span>
             </div>
-            
+
             <div class="event-date-badge">
                 <i class="far fa-calendar-alt"></i> Date: 2026-01-31
             </div>
@@ -187,7 +209,8 @@ if (isset($_SESSION['user_id'])) {
                     <i class="fab fa-cc-visa"></i>
                     <i class="fab fa-cc-mastercard"></i>
                 </div>
-                <p style="margin-top: 10px; font-size: 14px; color: #718096;">You can select the payment method in the checkout page.</p>
+                <p style="margin-top: 10px; font-size: 14px; color: #718096;">You can select the payment method in the
+                    checkout page.</p>
             </div>
 
             <div class="policy-section">
@@ -204,7 +227,8 @@ if (isset($_SESSION['user_id'])) {
                     <strong>1. Age Restriction</strong>
                     <ul>
                         <li>Children under 05 years of age will not be permitted inside the venue.</li>
-                        <li>Entry will be strictly denied regardless of ticket purchase if the child does not meet the age requirement.</li>
+                        <li>Entry will be strictly denied regardless of ticket purchase if the child does not meet the
+                            age requirement.</li>
                     </ul>
 
                     <strong>2. Ticketing</strong>
@@ -216,20 +240,24 @@ if (isset($_SESSION['user_id'])) {
                     <strong>3. Supervision & Responsibility</strong>
                     <ul>
                         <li>Minors aged 05–17 years must be accompanied by a parent or legal guardian.</li>
-                        <li>Parents/guardians are fully responsible for their child’s behavior and safety at all times.</li>
+                        <li>Parents/guardians are fully responsible for their child’s behavior and safety at all times.
+                        </li>
                     </ul>
 
                     <strong>4. Noise & Disturbance</strong>
                     <ul>
-                        <li>Any attendee (including minors) causing disturbance will be required to leave the auditorium immediately, with no ticket refund.</li>
+                        <li>Any attendee (including minors) causing disturbance will be required to leave the auditorium
+                            immediately, with no ticket refund.</li>
                     </ul>
 
                     <strong>5. Content Advisory</strong>
                     <ul>
-                        <li>The event may include strong sound, lighting, and/or thematic content that may not be suitable for younger audiences. Viewer discretion is advised.</li>
+                        <li>The event may include strong sound, lighting, and/or thematic content that may not be
+                            suitable for younger audiences. Viewer discretion is advised.</li>
                     </ul>
-                    
-                    <p style="margin-top: 15px; border-left: 3px solid #28a745; padding-left: 10px; font-style: italic;">
+
+                    <p
+                        style="margin-top: 15px; border-left: 3px solid #28a745; padding-left: 10px; font-style: italic;">
                         Entry permitted for children (10 Yrs and above) with a valid ticket only.
                     </p>
                 </div>
@@ -244,7 +272,8 @@ if (isset($_SESSION['user_id'])) {
         <div class="footer-content">
             <div class="footer-section">
                 <h3>About Us</h3>
-                <p>We are dedicated to bringing you the best events in town. From concerts to tech conferences, we handle it all with passion and precision.</p>
+                <p>We are dedicated to bringing you the best events in town. From concerts to tech conferences, we
+                    handle it all with passion and precision.</p>
             </div>
             <div class="footer-section">
                 <h3>Quick Links</h3>
@@ -274,4 +303,5 @@ if (isset($_SESSION['user_id'])) {
 
     <script src="script.js"></script>
 </body>
+
 </html>

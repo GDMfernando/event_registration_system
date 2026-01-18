@@ -24,60 +24,63 @@ if (!$result) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Users</title>
     <link rel="stylesheet" href="css/event.css">
 </head>
+
 <body>
 
 
 
-<div class="container">
-    <h1>Event Details</h1>
+    <div class="container">
+        <h1>Event Details</h1>
 
-    <?php
-    if ($result->num_rows > 0) {
-        echo "<table>";
-        echo "<tr><th>ID</th><th>Title</th><th>Description</th><th>Category</th><th>Venue</th><th>Start Time</th><th>End Time</th><th>Capacity</th><th>Available seats</th><th>Ticket Price</th>
+        <?php
+        if ($result->num_rows > 0) {
+            echo "<table>";
+            echo "<tr><th>ID</th><th>Title</th><th>Description</th><th>Category</th><th>Venue</th><th>Start Time</th><th>End Time</th><th>Capacity</th><th>Available seats</th><th>Ticket Price</th>
         <th>Status</th><th>created</th></tr>";
 
-        while($row = $result->fetch_assoc()) {
-            echo "<tr>";
-        echo "<td>".$row['event_id']."</td>";
-        echo "<td>".$row['title']."</td>";
-        echo "<td>".$row['description']."</td>";
-        echo "<td>".$row['category_id']."</td>";
-         echo "<td>".$row['venue_id']."</td>";
-         echo "<td>".$row['start_time']."</td>";
-         echo "<td>".$row['end_time']."</td>";
-         echo "<td>".$row['capacity']."</td>";
-         echo "<td>".$row['available_seats']."</td>";
-         echo "<td>".$row['ticket_price']."</td>";
-         echo "<td>".$row['status']."</td>";
-         echo "<td>".$row['created']."</td>";
-         
-         
-        echo "<td>
-        <img src='uploads/".$row['image']."' width='200'>
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>";
+                echo "<td>" . $row['event_id'] . "</td>";
+                echo "<td>" . $row['title'] . "</td>";
+                echo "<td>" . $row['description'] . "</td>";
+                echo "<td>" . $row['category_id'] . "</td>";
+                echo "<td>" . $row['venue_id'] . "</td>";
+                echo "<td>" . $row['start_time'] . "</td>";
+                echo "<td>" . $row['end_time'] . "</td>";
+                echo "<td>" . $row['capacity'] . "</td>";
+                echo "<td>" . $row['available_seats'] . "</td>";
+                echo "<td>Rs. " . $row['ticket_price'] . "</td>";
+                echo "<td>" . $row['status'] . "</td>";
+                echo "<td>" . $row['created'] . "</td>";
+
+
+                echo "<td>
+        <img src='uploads/" . $row['image'] . "' width='200'>
       </td>";
-        echo "</tr>";
+                echo "</tr>";
+            }
+
+            echo "</table>";
+        } else {
+            echo "<div class='no-data'>No data found.</div>";
         }
 
-        echo "</table>";
-    } else {
-        echo "<div class='no-data'>No data found.</div>";
-    }
+        $conn->close();
+        ?>
+    </div>
 
-    $conn->close();
-    ?>
-</div>
-
-<a href="book.php?id=<?php echo $row['id']; ?>" class="book-now-fixed">
-    Book Now
-</a>
+    <a href="book.php?id=<?php echo $row['id']; ?>" class="book-now-fixed">
+        Book Now
+    </a>
 
 
 </body>
+
 </html>

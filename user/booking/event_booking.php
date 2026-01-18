@@ -51,6 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $msg = "Ticket Details - Tickets are not reserved yet";
 }
 
+// Pre-fill user name if logged in
+$user_name = '';
+if (isset($_SESSION['user_id'])) {
+    if (isset($_SESSION['user_full_name'])) {
+        $user_name = $_SESSION['user_full_name'];
+    } else {
+        $uid = $_SESSION['user_id'];
+        $q = mysqli_query($conn, "SELECT full_name FROM user WHERE user_id = $uid");
+        if ($q && $row = mysqli_fetch_assoc($q)) {
+            $user_name = $row['full_name'];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -64,11 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body>
-        <!-- HEADER / NAVIGATION -->
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="home.php" class="nav-link active">Home</a>
+                <a href="../../home.php" class="nav-link active">Home</a>
 
                 <!-- EVENTS DROPDOWN -->
                 <div class="dropdown">
@@ -105,18 +118,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
+                <a href="../../help_buyer.php" class="nav-link">
+                    Help
+                </a>
 
-                <a href="contact.php" class="nav-link">Contact Us</a>
+                <a href="../../contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="welcome-text">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!
+                    </span>
+                    <a href="../user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="../user_login.php" class="btn-nav">Sign In</a>
+                    <a href="../user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php endif; ?>
             </div>
         </nav>
     </header>
@@ -140,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
                 <p><strong>Selected Seats (<?php echo $seat_count; ?>):</strong>
                     <?php echo implode(', ', $selected_seats); ?></p>
-                <p><strong>Total Price:</strong> $<?php echo number_format($total_price, 2); ?></p>
+                <p><strong>Total Price:</strong> Rs.<?php echo number_format($total_price, 2); ?></p>
             </div>
 
             <form method="post" action="checkout.php">

@@ -1,17 +1,33 @@
 <?php
 session_start();
 include "db_connect.php";
+
+// Pre-fill user name if logged in
+$user_name = '';
+if (isset($_SESSION['user_id'])) {
+    if (isset($_SESSION['user_full_name'])) {
+        $user_name = $_SESSION['user_full_name'];
+    } else {
+        $uid = $_SESSION['user_id'];
+        $q = mysqli_query($conn, "SELECT full_name FROM user WHERE user_id = $uid");
+        if ($q && $row = mysqli_fetch_assoc($q)) {
+            $user_name = $row['full_name'];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Help - Accessibility</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body>
-            <!-- HEADER / NAVIGATION -->
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
@@ -52,18 +68,25 @@ include "db_connect.php";
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
+
+                <a href="help_buyer.php" class="nav-link">
+                    Help
+                </a>
+
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="welcome-text">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!
+                    </span>
+                    <a href="user/user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                    <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php endif; ?>
             </div>
         </nav>
     </header>
@@ -85,8 +108,10 @@ include "db_connect.php";
                 <div class="help-content">
                     <h3>I'm registered disabled, do you provide carer tickets?</h3>
                     <p>
-                        The provision of carer tickets is event dependent. 
-                        You can inquire about the availability of carer tickets for a specific event by reaching out to one of our advisers directly. Please use the contact numbers provided on our <a href="contact.php">Contact Us</a> page.
+                        The provision of carer tickets is event dependent.
+                        You can inquire about the availability of carer tickets for a specific event by reaching out to
+                        one of our advisers directly. Please use the contact numbers provided on our <a
+                            href="contact.php">Contact Us</a> page.
                     </p>
                 </div>
                 <div class="help-footer">
@@ -132,4 +157,5 @@ include "db_connect.php";
 
     <script src="script.js"></script>
 </body>
+
 </html>

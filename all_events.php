@@ -53,7 +53,7 @@ if (isset($_SESSION['user_id'])) {
 
 <body>
 
-        <!-- HEADER / NAVIGATION -->
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
@@ -94,18 +94,25 @@ if (isset($_SESSION['user_id'])) {
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
+
+                <a href="help_buyer.php" class="nav-link">
+                    Help
+                </a>
+
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="welcome-text">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!
+                    </span>
+                    <a href="user/user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                    <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php endif; ?>
             </div>
         </nav>
     </header>

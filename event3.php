@@ -134,14 +134,14 @@ if (isset($_SESSION['user_id'])) {
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
             <div class="nav-right">
-                <?php if (!isset($_SESSION['user_id'])): ?>
-                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                    <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
-                <?php else: ?>
-                    <span class="welcome-text" style="color: white; margin-right: 15px; font-weight: 600;">Welcome,
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="welcome-text">Welcome,
                         <?php echo htmlspecialchars($user_name); ?>!
                     </span>
                     <a href="user/user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                    <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
                 <?php endif; ?>
             </div>
         </nav>

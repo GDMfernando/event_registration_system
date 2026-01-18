@@ -84,16 +84,16 @@ $events_result = mysqli_query($conn, $sql);
                         Theatre <i class="fas fa-caret-down arrow"></i>
                     </a>
                     <div class="dropdown-menu" id="theatreMenu">
-                        <a href="user/event.php?cat=Drama">Drama</a>
+                        <a href="event.php?cat=Drama">Drama</a>
                     </div>
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
+
+                <a href="help_buyer.php" class="nav-link">
+                    Help
+                </a>
+
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
@@ -251,7 +251,7 @@ $events_result = mysqli_query($conn, $sql);
                        LEFT JOIN event_categories c ON e.category_id = c.category_id
                        LEFT JOIN event_venues v ON e.venue_id = v.venue_id
                        WHERE e.status = 'active'
-                       AND c.category_name IN ('Tech', 'Concerts', 'Musical Festival', 'Art', 'Music')
+                       AND c.category_name IN ('Tech', 'Concert', 'Musical Festival', 'Art', 'Music')
                        ORDER BY e.event_date ASC";
         $special_events_result = mysqli_query($conn, $special_events_sql);
 

@@ -6,8 +6,8 @@ include "db_connect.php";
 $messageSent = false;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name    = htmlspecialchars(trim($_POST['name']));
-    $email   = htmlspecialchars(trim($_POST['email']));
+    $name = htmlspecialchars(trim($_POST['name']));
+    $email = htmlspecialchars(trim($_POST['email']));
     $subject = htmlspecialchars(trim($_POST['subject']));
     $message = htmlspecialchars(trim($_POST['message']));
 
@@ -27,12 +27,12 @@ if (isset($_SESSION['user_id'])) {
     // We could fetch email from DB if needed, but for now let's leave blank or rely on session if available
     // Assuming we might want to fetch it:
     if (isset($_SESSION['user_id'])) {
-         $uid = $_SESSION['user_id'];
-         $q = mysqli_query($conn, "SELECT email, full_name FROM user WHERE user_id = $uid");
-         if($q && $row = mysqli_fetch_assoc($q)){
-             $user_email = $row['email'];
-             $user_name = $row['full_name']; // Ensure we have the latest
-         }
+        $uid = $_SESSION['user_id'];
+        $q = mysqli_query($conn, "SELECT email, full_name FROM user WHERE user_id = $uid");
+        if ($q && $row = mysqli_fetch_assoc($q)) {
+            $user_email = $row['email'];
+            $user_name = $row['full_name']; // Ensure we have the latest
+        }
     }
 }
 ?>
@@ -51,24 +51,29 @@ if (isset($_SESSION['user_id'])) {
             background: #fff;
             padding: 40px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #333;
         }
-        .form-group input, .form-group textarea {
+
+        .form-group input,
+        .form-group textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 16px;
         }
+
         .success-message {
             background: #d4edda;
             color: #155724;
@@ -82,7 +87,7 @@ if (isset($_SESSION['user_id'])) {
 
 <body>
 
-       <!-- HEADER / NAVIGATION -->
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
@@ -123,18 +128,25 @@ if (isset($_SESSION['user_id'])) {
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
+
+                <a href="help_buyer.php" class="nav-link">
+                    Help
+                </a>
+
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="welcome-text">Welcome,
+                        <?php echo htmlspecialchars($user_name); ?>!
+                    </span>
+                    <a href="user/user_logout.php" class="btn-nav">Logout</a>
+                <?php else: ?>
+                    <a href="user/user_login.php" class="btn-nav">Sign In</a>
+                    <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <?php endif; ?>
             </div>
         </nav>
     </header>
@@ -142,7 +154,8 @@ if (isset($_SESSION['user_id'])) {
     <main class="contact-container">
 
         <h2 style="margin-top:0;">Contact Us</h2>
-        <p style="color: #666; margin-bottom: 30px;">If you have any questions or need help, please fill out the form below. We'd love to hear from you!</p>
+        <p style="color: #666; margin-bottom: 30px;">If you have any questions or need help, please fill out the form
+            below. We'd love to hear from you!</p>
 
         <?php if ($messageSent): ?>
             <div class="success-message">
@@ -171,7 +184,8 @@ if (isset($_SESSION['user_id'])) {
                 <textarea name="message" rows="6" required placeholder="Write your message here..."></textarea>
             </div>
 
-            <button type="submit" class="btn-main" style="width: 100%; border:none; padding: 15px; font-size: 16px; cursor: pointer;">Send Message</button>
+            <button type="submit" class="btn-main"
+                style="width: 100%; border:none; padding: 15px; font-size: 16px; cursor: pointer;">Send Message</button>
         </form>
     </main>
 
@@ -186,7 +200,8 @@ if (isset($_SESSION['user_id'])) {
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul class="footer-links">
-                    <li><a href="<?php echo isset($_SESSION['user_id']) ? 'logged_home.php' : 'home.php'; ?>">Home</a></li>
+                    <li><a href="<?php echo isset($_SESSION['user_id']) ? 'logged_home.php' : 'home.php'; ?>">Home</a>
+                    </li>
                     <li><a href="events.php">Events</a></li>
                     <li><a href="contact.php">Contact Us</a></li>
                 </ul>

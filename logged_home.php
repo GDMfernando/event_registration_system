@@ -54,7 +54,7 @@ $events_result = mysqli_query($conn, $sql);
 
 <body>
 
-        <!-- HEADER / NAVIGATION -->
+    <!-- HEADER / NAVIGATION -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
@@ -95,18 +95,20 @@ $events_result = mysqli_query($conn, $sql);
                 </div>
 
                 <!-- HELP DROPDOWN -->
-       
-                    <a href="help_buyer.php" class="nav-link" >
-                        Help 
-                    </a>
-              
+
+                <a href="help_buyer.php" class="nav-link">
+                    Help
+                </a>
+
 
                 <a href="contact.php" class="nav-link">Contact Us</a>
             </div>
 
             <div class="nav-right">
-                <a href="user/user_login.php" class="btn-nav">Sign In</a>
-                <a href="user/user_register.php" class="btn-nav btn-nav-outline">Register</a>
+                <span class="welcome-text">Welcome,
+                    <?php echo htmlspecialchars($user_name); ?>!
+                </span>
+                <a href="user/user_logout.php" class="btn-nav">Logout</a>
             </div>
         </nav>
     </header>
@@ -254,7 +256,7 @@ $events_result = mysqli_query($conn, $sql);
                        LEFT JOIN event_categories c ON e.category_id = c.category_id
                        LEFT JOIN event_venues v ON e.venue_id = v.venue_id
                        WHERE e.status = 'active'
-                       AND c.category_name IN ('Tech', 'Concerts', 'Musical Festival', 'Art', 'Music')
+                       AND c.category_name IN ('Tech', 'Concert', 'Musical Festival', 'Art', 'Music')
                        ORDER BY e.event_date ASC";
         $special_events_result = mysqli_query($conn, $special_events_sql);
 
