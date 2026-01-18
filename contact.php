@@ -6,14 +6,28 @@ include "db_connect.php";
 $messageSent = false;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = htmlspecialchars(trim($_POST['name']));
-    $email = htmlspecialchars(trim($_POST['email']));
-    $subject = htmlspecialchars(trim($_POST['subject']));
-    $message = htmlspecialchars(trim($_POST['message']));
 
-    // You can store this in DB or email it later if required
-    // For now, we simulate success
-    $messageSent = true;
+    // 1. Get form data (NO htmlspecialchars here)
+    $name    = trim($_POST['name']);
+    $email   = trim($_POST['email']);
+    $subject = trim($_POST['subject']);
+    $message = trim($_POST['message']);
+
+    // 2. Prepare SQL (placeholders ?)
+    $stmt = $conn->prepare(
+        "INSERT INTO contact_us (name, email, subject, message)
+         VALUES (?, ?, ?, ?)"
+    );
+
+    // 3. Bind values (ssss = 4 strings)
+    $stmt->bind_param("ssss", $name, $email, $subject, $message);
+
+    // 4. Execute
+    if ($stmt->execute()) {
+        $messageSent = true;
+    } else {
+        echo "Database error: " . $stmt->error;
+    }
 }
 
 // Pre-fill user data if logged in
@@ -225,5 +239,6 @@ if (isset($_SESSION['user_id'])) {
 
     <script src="script.js"></script>
 </body>
+
 
 </html>
